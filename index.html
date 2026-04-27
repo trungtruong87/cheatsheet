@@ -16,6 +16,7 @@
   --teal-dim: rgba(0,229,192,.13);
   --teal-hi:  rgba(0,229,192,.18);
   --gold:     #f0c040;
+  --gold-dim: rgba(240,192,64,.13);
   --red:      #ff5f6d;
   --text:     #ddeaf7;
   --text2:    #8aabca;
@@ -82,6 +83,20 @@ nav::-webkit-scrollbar-thumb { background: var(--border2); }
   cursor: pointer; outline: none; flex: 1;
 }
 .nav-speed select:focus { border-color: var(--teal); }
+.btn-repeat {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 7px 10px; margin-top: 6px;
+  background: transparent; border: 1px solid var(--border2);
+  border-radius: 6px; color: var(--text3);
+  font-family: var(--sans); font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all .13s ease;
+}
+.btn-repeat:hover { border-color: var(--gold); color: var(--gold); }
+.btn-repeat.on {
+  background: var(--gold-dim); border-color: var(--gold);
+  color: var(--gold); font-weight: 600;
+}
+
 .nav-progress {
   font-family: var(--mono); font-size: 10px; color: var(--text3);
   text-align: center; margin-top: 6px; min-height: 14px;
@@ -93,6 +108,18 @@ nav::-webkit-scrollbar-thumb { background: var(--border2); }
   letter-spacing: .14em; text-transform: uppercase;
   color: var(--text3); padding: 8px 12px 3px; display: block;
 }
+.nav-divider {
+  height: 1px; background: var(--border);
+  margin: 4px 10px 6px;
+}
+.chip-intro {
+  color: var(--gold) !important;
+  border-left-color: transparent;
+  font-weight: 600;
+}
+.chip-intro:hover { background: var(--gold-dim) !important; border-left-color: var(--gold) !important; }
+.chip-intro.active { color: var(--gold) !important; background: var(--gold-dim) !important; border-left-color: var(--gold) !important; }
+
 .chip {
   display: block; width: 100%; padding: 7px 12px;
   font-family: var(--sans); font-size: 13px; font-weight: 500;
@@ -250,39 +277,23 @@ k {
 <!-- NAV -->
 <nav id="nav">
 
-  <div class="nav-group">
-    <span class="nav-group-label">AI Concepts</span>
-    <button class="chip" data-card="llm">LLM</button>
-    <button class="chip" data-card="nlp">NLP vs LLM</button>
-    <button class="chip" data-card="rag">RAG</button>
-    <button class="chip" data-card="escalation">Prompt → RAG → FT</button>
-    <button class="chip" data-card="traininf">Training vs Inference</button>
-    <button class="chip" data-card="icd">ICD Codes</button>
-  </div>
-  <div class="nav-group">
-    <span class="nav-group-label">Failure Modes</span>
-    <button class="chip" data-card="hallucination">Hallucination</button>
-    <button class="chip" data-card="drift">Model Drift</button>
-  </div>
-  <div class="nav-group">
-    <span class="nav-group-label">Metrics</span>
-    <button class="chip" data-card="prf">Precision / Recall / F1</button>
-    <button class="chip" data-card="latency">p95 Latency + Tradeoffs</button>
-  </div>
-  <div class="nav-group">
-    <span class="nav-group-label">Product Process</span>
-    <button class="chip" data-card="ac">AC Rules + Bands + Fallback</button>
-    <button class="chip" data-card="dod">DoD Checklist</button>
-  </div>
-  <div class="nav-group">
-    <span class="nav-group-label">Compliance</span>
-    <button class="chip" data-card="hipaa">HIPAA / AEBA</button>
-    <button class="chip" data-card="phi">PHI + RBAC</button>
-  </div>
-  <div class="nav-group">
-    <span class="nav-group-label">Your Story</span>
-    <button class="chip" data-card="cox">System Design (Cox)</button>
-  </div>
+  <button class="chip chip-intro" data-card="intro">★ Introduction</button>
+  <div class="nav-divider"></div>
+  <button class="chip" data-card="ac">AC Rules + Fallback</button>
+  <button class="chip" data-card="dod">DoD Checklist</button>
+  <button class="chip" data-card="hallucination">Hallucination</button>
+  <button class="chip" data-card="hipaa">HIPAA / AEBA</button>
+  <button class="chip" data-card="icd">ICD Codes</button>
+  <button class="chip" data-card="llm">LLM</button>
+  <button class="chip" data-card="drift">Model Drift</button>
+  <button class="chip" data-card="nlp">NLP vs LLM</button>
+  <button class="chip" data-card="latency">p95 Latency + Tradeoffs</button>
+  <button class="chip" data-card="phi">PHI + RBAC</button>
+  <button class="chip" data-card="prf">Precision / Recall / F1</button>
+  <button class="chip" data-card="escalation">Prompt → RAG → FT</button>
+  <button class="chip" data-card="rag">RAG</button>
+  <button class="chip" data-card="cox">System Design (Cox)</button>
+  <button class="chip" data-card="traininf">Training vs Inference</button>
   <div class="nav-footer">
     <div class="nav-speed">
       <label>SPEED</label>
@@ -295,6 +306,7 @@ k {
       </select>
     </div>
     <button class="btn-play-all" id="btnPlayAll">▶ Play All Cards</button>
+    <button class="btn-repeat" id="btnRepeat">🔁 Repeat: Off</button>
     <div class="nav-progress" id="navProgress"></div>
   </div>
 </nav>
@@ -308,11 +320,21 @@ k {
     <div class="empty-s">Click any card on the left</div>
   </div>
 
+  <!-- ═══ INTRODUCTION ═══ -->
+  <div class="card" id="card-intro">
+    <div class="card-header"><div class="card-title">Introduction</div><div class="card-tag">Your Story</div></div>
+    <div class="script">
+      <p>I have been a <k>Product Owner for over five years</k>. I have a <k>technical background</k>, so I work well with engineering teams and I am comfortable going deep on the details.</p>
+      <p>I have <k>not shipped an AI or machine learning feature yet</k>. But I have spent real time understanding the concepts that matter for product decisions — things like <k>hallucination</k>, <k>model drift</k>, how <k>RAG</k> works, and what <k>HIPAA compliance</k> means when you are building with patient data.</p>
+      <p>What I am looking forward to in this role is getting hands-on with the real details — how the team decides when to <k>retrain a model</k>, how you <k>evaluate output quality</k>, and where the actual hard problems are. That is the part I want to learn by doing.</p>
+    </div>
+  </div>
+
   <!-- ═══ LLM ═══ -->
   <div class="card" id="card-llm">
     <div class="card-header"><div class="card-title">LLM</div><div class="card-tag">AI Concepts</div></div>
     <div class="script">
-      <p>An <k>LLM</k> — a <k>Large Language Model</k> — is trained on massive text to generate language. It is a <k>generalist</k>. It can handle many tasks, but it has four limitations that drive every product decision.</p>
+      <p>An <k>LLM</k> — a <k>Large Language Model</k> — is trained on a massive amount of text to recognize patterns and generate language. It can handle many tasks, but it has four limitations that drive every product decision.</p>
       <p><k>Hallucination</k> — the model produces confident output that is factually wrong, and it does not know it. <k>Knowledge cutoff</k> — blind after its training date. <k>No memory</k> — each call starts fresh. <k>Context window</k> — there is a hard limit on text per call, so long documents must be <k>chunked</k>.</p>
       <p>On cost — a <k>token</k> is about three-quarters of a word and you pay per token. Ten thousand notes at two thousand tokens each is <k>twenty million tokens a day</k>. Always calculate that before committing. Bigger models are more accurate but slower and more expensive. I define the requirements. <k>Engineering picks the model.</k></p>
     </div>
@@ -392,9 +414,9 @@ k {
   <div class="card" id="card-prf">
     <div class="card-header"><div class="card-title">Precision / Recall / F1</div><div class="card-tag">Metrics</div></div>
     <div class="script">
-      <p><k>Precision</k> — when the model says yes, how often is it right? Low precision means too many <k>false alarms</k>. Example — model flags ten notes, only eight are genuine. That is <k>80% precision</k>.</p>
-      <p><k>Recall</k> — of all real cases, how many did the model find? Low recall means real problems are <k>slipping through</k>. Example — ten notes truly missing a code, model found seven. <k>Missed three</k>. That is <k>70% recall</k>. <k>F1 score</k> balances both into one number.</p>
-      <p>In healthcare, <k>recall usually matters more</k> — missing a real case is worse than a false alarm. If an engineer says recall is 68%, I say: we are <k>missing 32% of real cases</k>. Not acceptable. <k>I pick the acceptable error. Engineering minimizes it.</k></p>
+      <p><k>Precision</k> is about false alarms. When the model flags something — how often is it actually right? If it flags ten things and only eight are real, that is <k>80% precision</k>. The other two were wasted effort.</p>
+      <p><k>Recall</k> is about what gets missed. Out of all the real problems that exist, how many did the model catch? If there are ten real problems and the model only found seven, that is <k>70% recall</k>. Three slipped through. <k>F1 score</k> balances both into one number.</p>
+      <p>In healthcare, <k>recall matters more</k>. Missing a real case is worse than a false alarm. So if an engineer tells me recall is low, I say — we are missing real cases. That is not acceptable. <k>I decide what error level is okay. Engineering figures out how to get there.</k></p>
     </div>
   </div>
 
@@ -408,24 +430,19 @@ k {
     </div>
   </div>
 
-  <!-- ═══ AC RULES + BANDS + FALLBACK ═══ -->
+  <!-- ═══ AC RULES + FALLBACK ═══ -->
   <div class="card" id="card-ac">
-    <div class="card-header"><div class="card-title">AC Rules + Bands + Fallback</div><div class="card-tag">Product Process</div></div>
+    <div class="card-header"><div class="card-title">AC Rules + Fallback</div><div class="card-tag">Product Process</div></div>
     <div class="script-cols">
       <div class="script-col">
-        <p>Four rules for writing <k>acceptance criteria</k> for AI features.</p>
-        <p>Rule one — replace "correct" with a <k>measurable threshold</k>. AI is probabilistic, so "the output is correct" is not testable. Write — "note accepted without major edits in <k>85% or more</k> of test cases."</p>
-        <p>Rule two — define <k>three performance bands</k> before development starts.</p>
-        <div class="bands">
-          <div class="band h"><div class="band-name">HEALTHY</div><div class="band-pct">85%+</div><div class="band-action">No action needed.</div></div>
-          <div class="band w"><div class="band-name">INVESTIGATE</div><div class="band-pct">75–85%</div><div class="band-action">Feature stays live. Team investigates.</div></div>
-          <div class="band r"><div class="band-name">ROLLBACK</div><div class="band-pct">Below 60%</div><div class="band-action">Feature turns off immediately.</div></div>
-        </div>
+        <p>For AI features, I follow four rules when writing <k>acceptance criteria</k>.</p>
+        <p>Rule one — never write "the output is correct." AI is not always right, so I write a number instead. For example — the note is accepted without major edits in <k>85% or more</k> of cases.</p>
+        <p>Rule two — agree upfront on what each performance level means. Above <k>85%</k>, no action needed. Between <k>75 and 85%</k>, the team investigates but the feature stays live. Below <k>60%</k>, the feature turns off immediately.</p>
       </div>
       <div class="script-col">
-        <p>Rule three — always write a <k>fallback AC</k>. If the model returns a <k>low-confidence score</k>, show a <k>blank template</k>. <k>No degraded AI output</k> is ever shown to a user.</p>
-        <p>Rule four — <k>monitoring ships with the feature</k>. Not next sprint. It is in the <k>Definition of Done</k>.</p>
-        <p>A code bug fails loudly. A bad AI model <k>fails quietly for months</k> — unless <k>monitoring ships with the feature</k>.</p>
+        <p>Rule three — always define what happens when the model is not confident. Show a <k>blank form</k>. Never show a low-quality AI output to a user.</p>
+        <p>Rule four — <k>monitoring goes live on the same day as the feature</k>. Not next sprint.</p>
+        <p>A code bug fails loudly. A bad AI model <k>fails quietly for months</k> — unless monitoring ships with the feature.</p>
       </div>
     </div>
   </div>
@@ -433,22 +450,10 @@ k {
   <!-- ═══ DOD ═══ -->
   <div class="card" id="card-dod">
     <div class="card-header"><div class="card-title">DoD Checklist</div><div class="card-tag">Product Process</div></div>
-    <div class="script-cols">
-      <div class="script-col">
-        <p>For any AI feature, five items — <k>all five</k> or it does not ship. I use <k>E, C, M, F, H</k>.</p>
-        <div class="dod">
-          <div class="dod-row"><div class="dod-letter">E</div><div class="dod-name">Eval report</div><div class="dod-desc">Hits the <k>exact agreed threshold</k> — not close to it.</div></div>
-          <div class="dod-row"><div class="dod-letter">C</div><div class="dod-name">Clinician sign-off</div><div class="dod-desc">A licensed clinician reviewed a real sample. <k>QA alone is not enough</k>.</div></div>
-          <div class="dod-row"><div class="dod-letter">M</div><div class="dod-name">Monitoring live</div><div class="dod-desc">On <k>launch day</k> — not next sprint.</div></div>
-        </div>
-      </div>
-      <div class="script-col">
-        <div class="dod" style="margin-top:30px">
-          <div class="dod-row"><div class="dod-letter">F</div><div class="dod-name">Fallback tested</div><div class="dod-desc">Low-confidence path shows <k>blank template</k> — actually tested, not assumed.</div></div>
-          <div class="dod-row"><div class="dod-letter">H</div><div class="dod-name">HIPAA cleared</div><div class="dod-desc"><k>BAA</k> signed for any external vendor. No patient data leaves without an agreement.</div></div>
-        </div>
-        <p style="margin-top:14px">If one is missing, we do not ship. It is not a judgment call. <k>E · C · M · F · H</k>.</p>
-      </div>
+    <div class="script">
+      <p>Before any AI feature ships, I check five things.</p>
+      <p>The <k>eval report</k> must hit the exact number we agreed on — not close, the exact number. <k>Clinician sign-off</k> — a real clinician reviewed a sample and approved it, QA alone is not enough. <k>Monitoring</k> must be live on launch day, not next sprint.</p>
+      <p>The <k>fallback path</k> must be actually tested — when the model is not confident, it shows a blank form, not a bad output. And <k>HIPAA</k> must be cleared — a signed agreement in place for any external vendor that touches patient data. If any one of these is missing, the feature does not ship.</p>
     </div>
   </div>
 
@@ -474,8 +479,8 @@ k {
     <div class="card-header"><div class="card-title">PHI + RBAC</div><div class="card-tag">Compliance</div></div>
     <div class="script">
       <p><k>PHI</k> — <k>Protected Health Information</k> — is any data that can identify a patient. Names, session notes, diagnosis codes, billing records, dates of service. If it links back to a real person, it is <k>PHI</k> and it must be protected.</p>
-      <p><k>RBAC</k> — <k>Role-Based Access Control</k> — users can only see and do what their <k>role permits</k>. A <k>billing admin</k> can access financial records but not therapy notes. A <k>therapist</k> sees their own clients only, not another therapist's clients.</p>
-      <p>I write <k>RBAC rules</k> explicitly in the <k>acceptance criteria</k>. I never assume the defaults are correct — a wrong default in a healthcare product can be a compliance violation.</p>
+      <p><k>RBAC</k> stands for <k>Role-Based Access Control</k>. It means each user can only see and do what their <k>role allows</k>. A <k>billing admin</k> can access financial records but not therapy notes. A <k>therapist</k> sees their own clients only, not another therapist's clients.</p>
+      <p>I write these <k>access rules</k> explicitly in the <k>acceptance criteria</k>. I never assume the default settings are correct — in healthcare, a wrong default can be a compliance violation.</p>
     </div>
   </div>
 
@@ -662,20 +667,26 @@ document.querySelectorAll('.audio-btn').forEach(btn => {
 
 /* ── PLAY ALL ── */
 const ALL_CARD_IDS = [
-  'card-llm','card-nlp','card-rag','card-escalation','card-traininf','card-icd',
-  'card-hallucination','card-drift',
-  'card-prf','card-latency',
-  'card-ac','card-dod',
-  'card-hipaa','card-phi',
-  'card-cox'
+  'card-intro',
+  'card-ac','card-dod','card-hallucination','card-hipaa','card-icd',
+  'card-llm','card-drift','card-nlp','card-latency','card-phi',
+  'card-prf','card-escalation','card-rag','card-cox','card-traininf'
 ];
 
 let playAllActive  = false;
 let playAllAborted = false;
+let repeatMode     = false;
 
 const btnPlayAll   = document.getElementById('btnPlayAll');
+const btnRepeat    = document.getElementById('btnRepeat');
 const navProgress  = document.getElementById('navProgress');
 const globalSpeed  = document.getElementById('globalSpeed');
+
+btnRepeat.addEventListener('click', () => {
+  repeatMode = !repeatMode;
+  btnRepeat.classList.toggle('on', repeatMode);
+  btnRepeat.textContent = repeatMode ? '🔁 Repeat: On' : '🔁 Repeat: Off';
+});
 
 function setPlayAllUI(on, label) {
   playAllActive = on;
@@ -686,6 +697,10 @@ function setPlayAllUI(on, label) {
 
 function speakCardSequentially(ids, index) {
   if (playAllAborted || index >= ids.length) {
+    if (!playAllAborted && repeatMode) {
+      speakCardSequentially(ids, 0);
+      return;
+    }
     setPlayAllUI(false);
     return;
   }
