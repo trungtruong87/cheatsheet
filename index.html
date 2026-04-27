@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPO Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080c10;
+  --bg2:      #0d1219;
+  --bg3:      #111a24;
+  --border:   #1c2c3c;
+  --border2:  #243344;
+  --teal:     #00e5c0;
+  --teal-dim: rgba(0,229,192,.13);
+  --teal-hi:  rgba(0,229,192,.18);
+  --gold:     #f0c040;
+  --red:      #ff5f6d;
+  --text:     #ddeaf7;
+  --text2:    #8aabca;
+  --text3:    #3a5068;
+  --mono:     'DM Mono', monospace;
+  --sans:     'Inter', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: var(--sans); font-size: 15px; line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 188px 1fr;
+  height: 100vh;
+}
+
+/* NAV */
+nav {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto; overflow-x: hidden;
+  padding: 12px 0 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+  display: flex; flex-direction: column;
+}
+nav::-webkit-scrollbar { width: 3px; }
+nav::-webkit-scrollbar-thumb { background: var(--border2); }
+
+
+
+/* GLOBAL PLAY */
+.nav-footer {
+  margin-top: auto; padding: 12px 10px 4px;
+  border-top: 1px solid var(--border);
+}
+.btn-play-all {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 9px 10px;
+  background: var(--teal-dim); border: 1px solid var(--teal);
+  border-radius: 6px; color: var(--teal);
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .13s ease; letter-spacing: .01em;
+}
+.btn-play-all:hover { background: rgba(0,229,192,.22); }
+.btn-play-all.playing { background: rgba(0,229,192,.25); }
+.nav-speed {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; margin-top: 7px;
+}
+.nav-speed label {
+  font-family: var(--mono); font-size: 10px; color: var(--text3);
+  letter-spacing: .08em;
+}
+.nav-speed select {
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); border-radius: 4px;
+  padding: 3px 6px; font-family: var(--mono); font-size: 11px;
+  cursor: pointer; outline: none; flex: 1;
+}
+.nav-speed select:focus { border-color: var(--teal); }
+.nav-progress {
+  font-family: var(--mono); font-size: 10px; color: var(--text3);
+  text-align: center; margin-top: 6px; min-height: 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.nav-group-label {
+  font-family: var(--mono); font-size: 9px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text3); padding: 8px 12px 3px; display: block;
+}
+.chip {
+  display: block; width: 100%; padding: 7px 12px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  color: var(--text2); background: transparent;
+  border: none; border-left: 2px solid transparent;
+  cursor: pointer; text-align: left; transition: all .12s ease;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chip:hover { color: var(--text); background: var(--teal-dim); border-left-color: var(--border2); }
+.chip.active { color: var(--teal); background: var(--teal-dim); border-left-color: var(--teal); font-weight: 600; }
+.chip.hidden { display: none; }
+
+/* CARD AREA */
+.card-area {
+  overflow: hidden; background: var(--bg);
+  display: flex; flex-direction: column; height: 100vh;
+}
+
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+  color: var(--text3); text-align: center;
+}
+.empty-icon { font-size: 30px; opacity: .4; }
+.empty-t { font-size: 15px; font-weight: 600; color: var(--text2); }
+.empty-s { font-size: 12px; font-family: var(--mono); }
+
+/* CARD */
+.card {
+  display: none; flex-direction: column;
+  height: 100%; padding: 15px 22px 12px;
+  animation: fadeIn .12s ease; overflow: hidden;
+}
+.card.visible { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:none; } }
+
+.card-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 11px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.card-title {
+  font-size: 18px; font-weight: 700; color: var(--teal); letter-spacing: -.01em;
+}
+.card-tag {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  color: var(--text3); letter-spacing: .08em; text-transform: uppercase;
+  background: var(--bg3); border: 1px solid var(--border2);
+  padding: 2px 7px; border-radius: 3px; margin-left: auto; flex-shrink: 0;
+}
+
+/* AUDIO BAR */
+.audio-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-left: auto; flex-shrink: 0;
+}
+.audio-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 5px;
+  border: 1px solid var(--border2); background: var(--bg3);
+  color: var(--text2); font-family: var(--sans); font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all .13s ease;
+  white-space: nowrap;
+}
+.audio-btn:hover { background: var(--border2); color: var(--text); }
+.audio-btn.playing {
+  background: var(--teal-dim); border-color: var(--teal);
+  color: var(--teal);
+}
+.audio-btn.playing:hover { background: rgba(0,229,192,.22); }
+.speed-sel {
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); border-radius: 5px;
+  padding: 5px 6px; font-family: var(--mono); font-size: 11px;
+  cursor: pointer; outline: none; transition: border-color .13s;
+}
+.speed-sel:focus { border-color: var(--teal); }
+.wave {
+  display: none; align-items: center; gap: 2px;
+}
+.wave.on { display: flex; }
+.wave span {
+  display: block; width: 3px; border-radius: 2px;
+  background: var(--teal);
+  animation: wv .7s ease-in-out infinite;
+}
+.wave span:nth-child(1){height:5px; animation-delay:0s;}
+.wave span:nth-child(2){height:11px;animation-delay:.1s;}
+.wave span:nth-child(3){height:7px; animation-delay:.2s;}
+.wave span:nth-child(4){height:13px;animation-delay:.3s;}
+.wave span:nth-child(5){height:5px; animation-delay:.4s;}
+@keyframes wv{0%,100%{transform:scaleY(1);opacity:.6;}50%{transform:scaleY(1.7);opacity:1;}}
+
+/* SCRIPT */
+.script {
+  flex: 1; font-size: 15px; color: var(--text2);
+  line-height: 1.8; overflow: hidden;
+}
+.script p { margin-bottom: 8px; }
+.script p:last-child { margin-bottom: 0; }
+
+/* two-column */
+.script-cols {
+  flex: 1; display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px; overflow: hidden;
+}
+.script-col {
+  font-size: 15px; color: var(--text2); line-height: 1.8;
+  border-right: 1px solid var(--border);
+  padding-right: 24px; overflow: hidden;
+}
+.script-col:last-child { border-right: none; padding-right: 0; }
+.script-col p { margin-bottom: 8px; }
+.script-col p:last-child { margin-bottom: 0; }
+
+/* keyword */
+k {
+  color: var(--teal); font-weight: 600;
+  background: var(--teal-hi);
+  border-radius: 3px; padding: 0 3px;
+}
+
+/* bands */
+.bands { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.band {
+  display: grid; grid-template-columns: 102px 70px 1fr;
+  gap: 6px; padding: 6px 10px; border-radius: 5px;
+  align-items: center;
+}
+.band.h { background: rgba(0,229,192,.08); border: 1px solid rgba(0,229,192,.25); }
+.band.w { background: rgba(240,192,64,.08);  border: 1px solid rgba(240,192,64,.25); }
+.band.r { background: rgba(255,95,109,.08);  border: 1px solid rgba(255,95,109,.25); }
+.band-name { font-family: var(--mono); font-size: 11px; font-weight: 700; }
+.band.h .band-name { color: var(--teal); }
+.band.w .band-name { color: var(--gold); }
+.band.r .band-name { color: var(--red);  }
+.band-pct    { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+.band-action { font-size: 13px; color: var(--text2); }
+
+/* dod rows */
+.dod { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
+.dod-row {
+  display: grid; grid-template-columns: 22px 114px 1fr;
+  gap: 8px; align-items: baseline; line-height: 1.55;
+}
+.dod-letter { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--teal); }
+.dod-name   { font-size: 14px; font-weight: 600; color: var(--text); }
+.dod-desc   { font-size: 14px; color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- NAV -->
+<nav id="nav">
+
+  <div class="nav-group">
+    <span class="nav-group-label">AI Concepts</span>
+    <button class="chip" data-card="llm">LLM</button>
+    <button class="chip" data-card="nlp">NLP vs LLM</button>
+    <button class="chip" data-card="rag">RAG</button>
+    <button class="chip" data-card="escalation">Prompt → RAG → FT</button>
+    <button class="chip" data-card="traininf">Training vs Inference</button>
+    <button class="chip" data-card="icd">ICD Codes</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Failure Modes</span>
+    <button class="chip" data-card="hallucination">Hallucination</button>
+    <button class="chip" data-card="drift">Model Drift</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Metrics</span>
+    <button class="chip" data-card="prf">Precision / Recall / F1</button>
+    <button class="chip" data-card="latency">p95 Latency + Tradeoffs</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Product Process</span>
+    <button class="chip" data-card="ac">AC Rules + Bands + Fallback</button>
+    <button class="chip" data-card="dod">DoD Checklist</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Compliance</span>
+    <button class="chip" data-card="hipaa">HIPAA / AEBA</button>
+    <button class="chip" data-card="phi">PHI + RBAC</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Your Story</span>
+    <button class="chip" data-card="cox">System Design (Cox)</button>
+  </div>
+  <div class="nav-footer">
+    <div class="nav-speed">
+      <label>SPEED</label>
+      <select id="globalSpeed">
+        <option value="0.75">0.75×</option>
+        <option value="0.85">0.85×</option>
+        <option value="0.9">0.9×</option>
+        <option value="1.0" selected>1.0×</option>
+        <option value="1.1">1.1×</option>
+      </select>
+    </div>
+    <button class="btn-play-all" id="btnPlayAll">▶ Play All Cards</button>
+    <div class="nav-progress" id="navProgress"></div>
+  </div>
+</nav>
+
+<!-- CARD AREA -->
+<div class="card-area">
+
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">⚡</div>
+    <div class="empty-t">Ready</div>
+    <div class="empty-s">Click any card on the left</div>
+  </div>
+
+  <!-- ═══ LLM ═══ -->
+  <div class="card" id="card-llm">
+    <div class="card-header"><div class="card-title">LLM</div><div class="card-tag">AI Concepts</div></div>
+    <div class="script">
+      <p>An <k>LLM</k> — a <k>Large Language Model</k> — is trained on massive text to generate language. It is a <k>generalist</k>. It can handle many tasks, but it has four limitations that drive every product decision.</p>
+      <p><k>Hallucination</k> — the model produces confident output that is factually wrong, and it does not know it. <k>Knowledge cutoff</k> — blind after its training date. <k>No memory</k> — each call starts fresh. <k>Context window</k> — there is a hard limit on text per call, so long documents must be <k>chunked</k>.</p>
+      <p>On cost — a <k>token</k> is about three-quarters of a word and you pay per token. Ten thousand notes at two thousand tokens each is <k>twenty million tokens a day</k>. Always calculate that before committing. Bigger models are more accurate but slower and more expensive. I define the requirements. <k>Engineering picks the model.</k></p>
+    </div>
+  </div>
+
+  <!-- ═══ NLP vs LLM ═══ -->
+  <div class="card" id="card-nlp">
+    <div class="card-header"><div class="card-title">NLP vs LLM</div><div class="card-tag">AI Concepts</div></div>
+    <div class="script">
+      <p><k>NLP</k> tools are <k>specialists</k> — built for one task, fast, cheap, and fully explainable. <k>LLMs</k> are <k>generalists</k> — flexible and fluent, but they can <k>hallucinate</k> and cost more to run.</p>
+      <p>The rule is simple. If you need to <k>extract</k> a specific fact — a billing code, a diagnosis — use NLP. If you need to <k>generate</k> natural text — a session note, a summary — use an LLM. <k>NLP extracts the codes. The LLM writes the notes.</k></p>
+      <p>I would not default to an LLM just because it sounds more advanced. An NLP tool is more <k>auditable</k> — you can trace exactly why it gave the answer it did. That matters a lot in a regulated environment.</p>
+    </div>
+  </div>
+
+  <!-- ═══ RAG ═══ -->
+  <div class="card" id="card-rag">
+    <div class="card-header"><div class="card-title">RAG</div><div class="card-tag">AI Concepts</div></div>
+    <div class="script">
+      <p><k>RAG</k> — <k>Retrieval Augmented Generation</k> — gives the model access to real documents at query time instead of relying on frozen training memory. Text is converted into numbers called <k>embeddings</k>, a <k>vector database</k> finds the most relevant documents by meaning — that is <k>semantic search</k> — and the model uses those documents to generate its answer.</p>
+      <p>Every answer traces back to a real document. That means it is <k>auditable</k>. And it stays current without retraining — which matters a lot when guidelines and codes change regularly.</p>
+      <p>If RAG gives poor answers, the problem is usually <k>embedding quality</k> or <k>chunking strategy</k> — not the model. Chunk size, overlap, and embedding model choice are <k>product requirements</k> I define, not engineering details.</p>
+    </div>
+  </div>
+
+  <!-- ═══ ESCALATION ═══ -->
+  <div class="card" id="card-escalation">
+    <div class="card-header"><div class="card-title">Prompt Eng → RAG → Fine-tuning</div><div class="card-tag">AI Concepts</div></div>
+    <div class="script">
+      <p>There are three ways to improve a model and you always try them in order — <k>never skip steps</k>.</p>
+      <p><k>Prompt engineering</k> first — improve the instructions you give the model. Free, takes hours, the model does not change. <k>Always try this first.</k> Then <k>RAG</k> — give the model access to real documents. Every answer traces to a source. Takes days to weeks. Use this for policies and guidelines that change often. Then <k>fine-tuning</k> — continue training on your own data. The model changes <k>permanently</k>, takes weeks, and is expensive. <k>Only when everything else has failed.</k></p>
+      <p>Recommending fine-tuning before exhausting the first two options signals <k>poor product judgment</k>. It is the most costly path and usually unnecessary.</p>
+    </div>
+  </div>
+
+  <!-- ═══ TRAINING vs INFERENCE ═══ -->
+  <div class="card" id="card-traininf">
+    <div class="card-header"><div class="card-title">Training vs Inference</div><div class="card-tag">AI Concepts</div></div>
+    <div class="script">
+      <p><k>Training</k> is when the model learns from data — slow, expensive, happens every few months. <k>Inference</k> is when the model runs in production — fast, real-time, thousands of times a day.</p>
+      <p>As TPO, I live in the <k>inference</k> world. I define the <k>latency requirement</k>, the <k>cost per call</k>, the <k>fallback behavior</k>, and I make sure <k>drift monitoring</k> is in place. <k>Training</k> is a <k>roadmap decision</k> — I trigger it based on what I see in production.</p>
+      <p>I would retrain when <k>user acceptance</k> drops below the alert threshold or when there is a significant change in the data the model needs to understand. <k>Monitoring</k> is how I know when that moment has arrived.</p>
+    </div>
+  </div>
+
+  <!-- ═══ ICD CODES ═══ -->
+  <div class="card" id="card-icd">
+    <div class="card-header"><div class="card-title">ICD Codes</div><div class="card-tag">AI Concepts</div></div>
+    <div class="script">
+      <p><k>ICD codes</k> — <k>International Classification of Diseases</k> — are standardized numbers used to label diagnoses. For example, <k>F32.1</k> means Major Depressive Disorder, moderate. They are used in billing, records, and reporting.</p>
+      <p>The key issue is that <k>ICD codes change with each version release</k>. If you rely on a model's frozen training memory, it will not know about new codes after the cutoff date.</p>
+      <p>That is why I would always push for <k>RAG</k> for anything involving codes — it pulls from a <k>live, updated document library</k>. I would define <k>knowledge base freshness</k> as a product requirement and put a <k>refresh schedule</k> and a <k>freshness SLA</k> on the roadmap.</p>
+    </div>
+  </div>
+
+  <!-- ═══ HALLUCINATION ═══ -->
+  <div class="card" id="card-hallucination">
+    <div class="card-header"><div class="card-title">Hallucination</div><div class="card-tag">Failure Modes</div></div>
+    <div class="script">
+      <p>The model can produce confident output that is completely wrong — and it does not know it. That is the problem with <k>hallucination</k>. In a healthcare product, that is a <k>patient safety risk</k>. An invented dosage or a fabricated diagnosis could directly harm someone.</p>
+      <p>The way I would handle it — four protections. A <k>review gate</k> so no clinical output reaches a record without approval. <k>RAG grounding</k> to anchor the model in real documents. Continuous monitoring of the <k>hallucination rate</k> in production. And a pre-defined <k>rollback trigger</k> — if the rate crosses the threshold, the feature turns off immediately.</p>
+      <p>The distinction worth making — <k>hallucination</k> is wrong from day one, so you need a review gate. <k>Drift</k> is correct at launch but gets worse over time, so you need monitoring. Different problem, different fix.</p>
+    </div>
+  </div>
+
+  <!-- ═══ MODEL DRIFT ═══ -->
+  <div class="card" id="card-drift">
+    <div class="card-header"><div class="card-title">Model Drift</div><div class="card-tag">Failure Modes</div></div>
+    <div class="script">
+      <p><k>Model drift</k> is when the model gets worse over time — not because the model changed, but because the <k>world did</k>. New codes, updated guidelines, evolving language. The model was trained on old data and slowly falls behind.</p>
+      <p>Three responses. Record <k>baseline metrics</k> at launch — that is the reference point. Set an <k>alert threshold</k> — if acceptance drops below <k>75%</k>, the team investigates. Put <k>retraining</k> on the roadmap as a <k>recurring scheduled item</k>, not a crisis response.</p>
+      <p><k>Monitoring</k> must ship with the feature. Without it, drift fails silently for months. The distinction — <k>drift</k> is correct at launch, then degrades. <k>Hallucination</k> is wrong from day one.</p>
+    </div>
+  </div>
+
+  <!-- ═══ PRECISION / RECALL / F1 ═══ -->
+  <div class="card" id="card-prf">
+    <div class="card-header"><div class="card-title">Precision / Recall / F1</div><div class="card-tag">Metrics</div></div>
+    <div class="script">
+      <p><k>Precision</k> — when the model says yes, how often is it right? Low precision means too many <k>false alarms</k>. Example — model flags ten notes, only eight are genuine. That is <k>80% precision</k>.</p>
+      <p><k>Recall</k> — of all real cases, how many did the model find? Low recall means real problems are <k>slipping through</k>. Example — ten notes truly missing a code, model found seven. <k>Missed three</k>. That is <k>70% recall</k>. <k>F1 score</k> balances both into one number.</p>
+      <p>In healthcare, <k>recall usually matters more</k> — missing a real case is worse than a false alarm. If an engineer says recall is 68%, I say: we are <k>missing 32% of real cases</k>. Not acceptable. <k>I pick the acceptable error. Engineering minimizes it.</k></p>
+    </div>
+  </div>
+
+  <!-- ═══ P95 LATENCY ═══ -->
+  <div class="card" id="card-latency">
+    <div class="card-header"><div class="card-title">p95 Latency + Tradeoffs</div><div class="card-tag">Metrics</div></div>
+    <div class="script">
+      <p><k>p95 latency</k> means 95 out of 100 requests respond within the target time. The slowest 5% may take longer — that is acceptable. It gives a precise, measurable guarantee.</p>
+      <p>In acceptance criteria I always write — <k>must respond within 2 seconds at p95</k>. Never "must be fast." That is <k>not measurable</k> and leads to disagreements at the end of a sprint.</p>
+      <p>On tradeoffs — for a <k>real-time feature</k>, optimize for <k>speed</k>. For an <k>overnight batch process</k>, optimize for <k>accuracy</k>. My job is to define the requirements. <k>Engineering picks the model.</k> Always <k>match the model to the use case</k>.</p>
+    </div>
+  </div>
+
+  <!-- ═══ AC RULES + BANDS + FALLBACK ═══ -->
+  <div class="card" id="card-ac">
+    <div class="card-header"><div class="card-title">AC Rules + Bands + Fallback</div><div class="card-tag">Product Process</div></div>
+    <div class="script-cols">
+      <div class="script-col">
+        <p>Four rules for writing <k>acceptance criteria</k> for AI features.</p>
+        <p>Rule one — replace "correct" with a <k>measurable threshold</k>. AI is probabilistic, so "the output is correct" is not testable. Write — "note accepted without major edits in <k>85% or more</k> of test cases."</p>
+        <p>Rule two — define <k>three performance bands</k> before development starts.</p>
+        <div class="bands">
+          <div class="band h"><div class="band-name">HEALTHY</div><div class="band-pct">85%+</div><div class="band-action">No action needed.</div></div>
+          <div class="band w"><div class="band-name">INVESTIGATE</div><div class="band-pct">75–85%</div><div class="band-action">Feature stays live. Team investigates.</div></div>
+          <div class="band r"><div class="band-name">ROLLBACK</div><div class="band-pct">Below 60%</div><div class="band-action">Feature turns off immediately.</div></div>
+        </div>
+      </div>
+      <div class="script-col">
+        <p>Rule three — always write a <k>fallback AC</k>. If the model returns a <k>low-confidence score</k>, show a <k>blank template</k>. <k>No degraded AI output</k> is ever shown to a user.</p>
+        <p>Rule four — <k>monitoring ships with the feature</k>. Not next sprint. It is in the <k>Definition of Done</k>.</p>
+        <p>A code bug fails loudly. A bad AI model <k>fails quietly for months</k> — unless <k>monitoring ships with the feature</k>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DOD ═══ -->
+  <div class="card" id="card-dod">
+    <div class="card-header"><div class="card-title">DoD Checklist</div><div class="card-tag">Product Process</div></div>
+    <div class="script-cols">
+      <div class="script-col">
+        <p>For any AI feature, five items — <k>all five</k> or it does not ship. I use <k>E, C, M, F, H</k>.</p>
+        <div class="dod">
+          <div class="dod-row"><div class="dod-letter">E</div><div class="dod-name">Eval report</div><div class="dod-desc">Hits the <k>exact agreed threshold</k> — not close to it.</div></div>
+          <div class="dod-row"><div class="dod-letter">C</div><div class="dod-name">Clinician sign-off</div><div class="dod-desc">A licensed clinician reviewed a real sample. <k>QA alone is not enough</k>.</div></div>
+          <div class="dod-row"><div class="dod-letter">M</div><div class="dod-name">Monitoring live</div><div class="dod-desc">On <k>launch day</k> — not next sprint.</div></div>
+        </div>
+      </div>
+      <div class="script-col">
+        <div class="dod" style="margin-top:30px">
+          <div class="dod-row"><div class="dod-letter">F</div><div class="dod-name">Fallback tested</div><div class="dod-desc">Low-confidence path shows <k>blank template</k> — actually tested, not assumed.</div></div>
+          <div class="dod-row"><div class="dod-letter">H</div><div class="dod-name">HIPAA cleared</div><div class="dod-desc"><k>BAA</k> signed for any external vendor. No patient data leaves without an agreement.</div></div>
+        </div>
+        <p style="margin-top:14px">If one is missing, we do not ship. It is not a judgment call. <k>E · C · M · F · H</k>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HIPAA / AEBA ═══ -->
+  <div class="card" id="card-hipaa">
+    <div class="card-header"><div class="card-title">HIPAA / AEBA</div><div class="card-tag">Compliance</div></div>
+    <div class="script-cols">
+      <div class="script-col">
+        <p>Four checks before any feature that touches patient data ships. Memory hook — <k>A, E, B, A</k>.</p>
+        <p><k>A — Authorization</k>. Write <k>RBAC</k> rules in the acceptance criteria. A billing admin cannot access therapy notes. Users see only what their <k>role permits</k>.</p>
+        <p><k>E — Encryption</k>. In transit — <k>TLS 1.2</k>. At rest — <k>AES-256</k>. <k>Unencrypted PHI</k> is a HIPAA violation.</p>
+      </div>
+      <div class="script-col">
+        <p><k>B — BAA</k> — <k>Business Associate Agreement</k>. Required before <k>PHI</k> touches any external API. <k>No BAA means a violation.</k> Non-negotiable.</p>
+        <p><k>A — Audit Logs</k>. Every PHI access logged — who, when, why. Required for <k>compliance audits</k>. Belongs in the Definition of Done.</p>
+        <p><k>A · E · B · A</k> — all four or it does not ship.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHI + RBAC ═══ -->
+  <div class="card" id="card-phi">
+    <div class="card-header"><div class="card-title">PHI + RBAC</div><div class="card-tag">Compliance</div></div>
+    <div class="script">
+      <p><k>PHI</k> — <k>Protected Health Information</k> — is any data that can identify a patient. Names, session notes, diagnosis codes, billing records, dates of service. If it links back to a real person, it is <k>PHI</k> and it must be protected.</p>
+      <p><k>RBAC</k> — <k>Role-Based Access Control</k> — users can only see and do what their <k>role permits</k>. A <k>billing admin</k> can access financial records but not therapy notes. A <k>therapist</k> sees their own clients only, not another therapist's clients.</p>
+      <p>I write <k>RBAC rules</k> explicitly in the <k>acceptance criteria</k>. I never assume the defaults are correct — a wrong default in a healthcare product can be a compliance violation.</p>
+    </div>
+  </div>
+
+  <!-- ═══ SYSTEM DESIGN ═══ -->
+  <div class="card" id="card-cox">
+    <div class="card-header"><div class="card-title">System Design (Cox)</div><div class="card-tag">Your Story</div></div>
+    <div class="script">
+      <p>The system was <k>microservices</k> on <k>AWS</k>. Each service owned one capability and was deployed independently. Services communicated two ways — <k>synchronously</k> via <k>REST APIs</k> for real-time calls, and <k>asynchronously</k> via <k>SQS</k> and <k>SNS</k> for background processing.</p>
+      <p>Data in <k>RDS</k> for relational data and <k>S3</k> for files. Compute on <k>ECS</k> for containers and <k>Lambda</k> for serverless. <k>API Gateway</k> for external traffic. <k>CloudWatch</k> for monitoring.</p>
+      <p>My role — <k>I brought the constraints. Engineering brought the design.</k> I defined latency, load, compliance isolation, and alert thresholds. If you ask me about any AWS service, I will tell you what I <k>observed it doing</k> — not how it works internally. <k>I am a TPO, not a cloud architect.</k></p>
+    </div>
+  </div>
+
+</div><!-- /card-area -->
+</div><!-- /shell -->
+
+<script>
+/* ── CARD SWITCHING ── */
+const chips = document.querySelectorAll('.chip');
+const cards = document.querySelectorAll('.card');
+const empty = document.getElementById('emptyState');
+
+function showCard(id) {
+  stopTTS();
+  cards.forEach(c => c.classList.remove('visible'));
+  chips.forEach(c => c.classList.remove('active'));
+  empty.style.display = 'none';
+  const card = document.getElementById('card-' + id);
+  if (card) card.classList.add('visible');
+  const chip = document.querySelector(`.chip[data-card="${id}"]`);
+  if (chip) chip.classList.add('active');
+}
+chips.forEach(chip => chip.addEventListener('click', () => showCard(chip.dataset.card)));
+
+/* ── INJECT AUDIO BAR INTO EVERY CARD HEADER ── */
+document.querySelectorAll('.card').forEach(card => {
+  const header = card.querySelector('.card-header');
+  const tag    = header.querySelector('.card-tag');
+
+  const bar = document.createElement('div');
+  bar.className = 'audio-bar';
+  bar.innerHTML = `
+    <div class="wave" id="wave-${card.id}">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <select class="speed-sel" id="speed-${card.id}" title="Speed">
+      <option value="0.75">0.75×</option>
+      <option value="0.85">0.85×</option>
+      <option value="0.9">0.9×</option>
+      <option value="1.0" selected>1.0×</option>
+      <option value="1.1">1.1×</option>
+    </select>
+    <button class="audio-btn" id="btn-${card.id}" title="Read aloud">▶ Listen</button>
+  `;
+  header.insertBefore(bar, tag);
+});
+
+/* ── TTS ENGINE ── */
+const synth = window.speechSynthesis;
+let   activeBtnId = null;
+let   isPaused    = false;
+let   keepAlive   = null;
+
+/* Strip HTML tags and clean symbols for clean speech */
+function getCleanText(card) {
+  const clone = card.cloneNode(true);
+  // remove band labels (HEALTHY / INVESTIGATE / ROLLBACK) — they'll be read from prose
+  clone.querySelectorAll('.band-name, .band-pct').forEach(el => el.remove());
+  clone.querySelectorAll('.card-header').forEach(el => el.remove());
+  let text = clone.innerText || clone.textContent || '';
+  return text
+    .replace(/▶.*|⏸.*|⏹.*|×/g, '')   // remove button text
+    .replace(/[·•→≥≤]/g, ', ')
+    .replace(/%/g, ' percent')
+    .replace(/p95/g, 'P 95')
+    .replace(/\bAES-256\b/g, 'A E S 256')
+    .replace(/\bTLS 1\.2\b/g, 'T L S 1 point 2')
+    .replace(/\bBAA\b/g, 'B A A')
+    .replace(/\bRAG\b/g, 'R A G')
+    .replace(/\bNLP\b/g, 'N L P')
+    .replace(/\bLLM\b/g, 'L L M')
+    .replace(/\bLLMs\b/g, 'L L Ms')
+    .replace(/\bTPO\b/g, 'T P O')
+    .replace(/\bPHI\b/g, 'P H I')
+    .replace(/\bRBAC\b/g, 'R B A C')
+    .replace(/\bAC\b/g, 'A C')
+    .replace(/\bDoD\b/g, 'D o D')
+    .replace(/\bSQS\b/g, 'S Q S')
+    .replace(/\bSNS\b/g, 'S N S')
+    .replace(/\bRDS\b/g, 'R D S')
+    .replace(/\bECS\b/g, 'E C S')
+    .replace(/\bAPI\b/g, 'A P I')
+    .replace(/\bAPIs\b/g, 'A P Is')
+    .replace(/\bAWS\b/g, 'A W S')
+    .replace(/\bS3\b/g, 'S 3')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+
+/* Pick the warmest available English voice */
+function pickVoice() {
+  const voices = synth.getVoices().filter(v => v.lang && v.lang.startsWith('en'));
+  const prefs  = [
+    'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Natasha',
+    'Google UK English Female', 'Samantha', 'Karen', 'Moira',
+    'Google US English', 'Microsoft David', 'Alex'
+  ];
+  for (const p of prefs) {
+    const v = voices.find(v => v.name.includes(p));
+    if (v) return v;
+  }
+  return voices[0] || null;
+}
+
+function setPlaying(btnId, on) {
+  const btn  = document.getElementById('btn-' + btnId);
+  const wave = document.getElementById('wave-' + btnId);
+  if (!btn) return;
+  if (on) {
+    btn.textContent  = '⏹ Stop';
+    btn.classList.add('playing');
+    wave && wave.classList.add('on');
+  } else {
+    btn.textContent  = '▶ Listen';
+    btn.classList.remove('playing');
+    wave && wave.classList.remove('on');
+  }
+}
+
+function stopTTS() {
+  synth.cancel();
+  isPaused = false;
+  if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
+  if (activeBtnId) { setPlaying(activeBtnId, false); activeBtnId = null; }
+}
+
+function startKeepAlive() {
+  if (keepAlive) clearInterval(keepAlive);
+  keepAlive = setInterval(() => {
+    if (synth.speaking && !isPaused) { synth.pause(); synth.resume(); }
+  }, 10000);
+}
+
+function speak(cardEl) {
+  const cardId = cardEl.id;
+
+  // toggle off if already playing this card
+  if (activeBtnId === cardId) { stopTTS(); return; }
+
+  stopTTS();
+
+  const text  = getCleanText(cardEl);
+  const utt   = new SpeechSynthesisUtterance(text);
+  const speed = parseFloat(document.getElementById('speed-' + cardId)?.value || '1.0');
+
+  utt.voice  = pickVoice();
+  utt.rate   = speed;
+  utt.pitch  = 1.0;
+  utt.volume = 1.0;
+
+  utt.onstart = () => {
+    activeBtnId = cardId;
+    setPlaying(cardId, true);
+    startKeepAlive();
+  };
+  utt.onend = utt.onerror = () => {
+    if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
+    setPlaying(cardId, false);
+    activeBtnId = null;
+  };
+
+  synth.speak(utt);
+}
+
+/* Wire up each Listen button */
+document.querySelectorAll('.audio-btn').forEach(btn => {
+  const cardId = btn.id.replace('btn-', '');
+  btn.addEventListener('click', () => {
+    const card = document.getElementById(cardId);
+    if (card) speak(card);
+  });
+});
+
+/* ── PLAY ALL ── */
+const ALL_CARD_IDS = [
+  'card-llm','card-nlp','card-rag','card-escalation','card-traininf','card-icd',
+  'card-hallucination','card-drift',
+  'card-prf','card-latency',
+  'card-ac','card-dod',
+  'card-hipaa','card-phi',
+  'card-cox'
+];
+
+let playAllActive  = false;
+let playAllAborted = false;
+
+const btnPlayAll   = document.getElementById('btnPlayAll');
+const navProgress  = document.getElementById('navProgress');
+const globalSpeed  = document.getElementById('globalSpeed');
+
+function setPlayAllUI(on, label) {
+  playAllActive = on;
+  btnPlayAll.textContent = on ? '⏹ Stop' : '▶ Play All Cards';
+  btnPlayAll.classList.toggle('playing', on);
+  if (!on) navProgress.textContent = '';
+}
+
+function speakCardSequentially(ids, index) {
+  if (playAllAborted || index >= ids.length) {
+    setPlayAllUI(false);
+    return;
+  }
+
+  const cardId = ids[index];
+  const card   = document.getElementById(cardId);
+  if (!card) { speakCardSequentially(ids, index + 1); return; }
+
+  // Switch to this card visually
+  showCard(cardId.replace('card-', ''));
+
+  // Update progress label
+  const chip = document.querySelector(`.chip[data-card="${cardId.replace('card-','')}"]`);
+  navProgress.textContent = `${index + 1} / ${ids.length}  ${chip ? chip.textContent.trim() : ''}`;
+
+  const text  = getCleanText(card);
+  const utt   = new SpeechSynthesisUtterance(text);
+  const speed = parseFloat(globalSpeed.value || '1.0');
+
+  utt.voice  = pickVoice();
+  utt.rate   = speed;
+  utt.pitch  = 1.0;
+  utt.volume = 1.0;
+
+  utt.onstart = () => {
+    activeBtnId = cardId;
+    setPlaying(cardId, true);
+    startKeepAlive();
+  };
+  utt.onend = () => {
+    setPlaying(cardId, false);
+    activeBtnId = null;
+    if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
+    // small pause between cards
+    setTimeout(() => speakCardSequentially(ids, index + 1), 900);
+  };
+  utt.onerror = (e) => {
+    if (e.error === 'interrupted' || e.error === 'canceled') return;
+    setPlaying(cardId, false);
+    activeBtnId = null;
+    speakCardSequentially(ids, index + 1);
+  };
+
+  synth.speak(utt);
+}
+
+btnPlayAll.addEventListener('click', () => {
+  if (playAllActive) {
+    playAllAborted = true;
+    stopTTS();
+    setPlayAllUI(false);
+    return;
+  }
+  stopTTS();
+  playAllAborted = false;
+  setPlayAllUI(true);
+  speakCardSequentially(ALL_CARD_IDS, 0);
+});
+
+/* stop play-all if user clicks an individual card chip */
+chips.forEach(chip => chip.addEventListener('click', () => {
+  if (playAllActive) {
+    playAllAborted = true;
+    stopTTS();
+    setPlayAllUI(false);
+  }
+}));
+
+/* Reload voices when ready (Chrome async) */
+if (synth.onvoiceschanged !== undefined) {
+  synth.onvoiceschanged = () => {};
+}
+</script>
+</body>
+</html>
