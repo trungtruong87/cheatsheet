@@ -132,6 +132,21 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI
 .svc-mini-item{background:var(--surface2);border:0.5px solid var(--border);border-radius:5px;padding:6px 9px;display:flex;flex-direction:column;gap:2px;}
 .svc-mini-item strong{font-size:10px;color:var(--text);}
 .svc-mini-item span{font-size:10px;color:var(--muted);line-height:1.35;}
+
+.multi-opt{display:flex;align-items:flex-start;gap:8px;padding:7px 11px;border-radius:6px;border:0.5px solid var(--border);cursor:pointer;transition:all .15s;background:var(--surface2);font-size:12px;color:var(--muted);text-align:left;width:100%;margin-bottom:5px;}
+.multi-opt:hover:not(:disabled){border-color:var(--border2);color:var(--text);}
+.multi-opt.selected{border-color:var(--accent);background:rgba(79,158,255,.08);color:var(--accent);}
+.multi-opt.correct{border-color:var(--green);background:rgba(52,211,153,.08);color:var(--green);}
+.multi-opt.wrong{border-color:var(--red);background:rgba(248,113,113,.08);color:var(--red);}
+.multi-opt.reveal{border-color:var(--green);background:rgba(52,211,153,.05);color:var(--green);opacity:.6;}
+.opt-check{font-size:13px;min-width:16px;margin-top:1px;}
+.order-list{display:flex;flex-direction:column;gap:5px;margin-bottom:8px;}
+.order-item{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:6px;border:0.5px solid var(--border);background:var(--surface2);font-size:12px;color:var(--muted);}
+.order-num{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:10px;font-weight:700;min-width:18px;color:var(--muted);}
+.order-text{flex:1;}
+.order-btns{display:flex;flex-direction:column;gap:2px;margin-left:auto;}
+.order-btns button{font-size:10px;padding:1px 5px;border-radius:3px;border:0.5px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;line-height:1.4;}
+.order-btns button:hover{color:var(--text);background:var(--surface2);}
 </style>
 </head>
 <body>
@@ -171,6 +186,8 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI
   <div class="mode-divider"></div>
   <button class="filter-btn scenario-btn" onclick="filterQuiz('scenario',this)">Scenario</button>
   <button class="filter-btn recall-btn" onclick="filterQuiz('recall',this)">Recall</button>
+  <button class="filter-btn" onclick="filterQuiz('multi',this)" style="border-color:rgba(232,121,249,.4);color:var(--muted)">Multi-select</button>
+  <button class="filter-btn" onclick="filterQuiz('order',this)" style="border-color:rgba(45,212,191,.4);color:var(--muted)">Ordering</button>
   <button class="btn primary" onclick="resetQuiz()" style="margin-left:auto">Reset</button>
 </div>
 <div class="domain-scores" id="domain-scores"></div>
@@ -245,6 +262,38 @@ const questions = [
 {domain:'D5',type:'scenario',q:'A company’s governance policy requires that all AI use cases be classified by risk level before deployment, and appropriate controls assigned to each. Which AWS framework supports this?',opts:['AWS Well-Architected Framework','AWS Shared Responsibility Model','Generative AI Security Scoping Matrix','AWS Config Rules'],ans:2,exp:'Generative AI Security Scoping Matrix: AWS framework that classifies GenAI use cases by risk level and maps them to appropriate security controls. Well-Architected = general best practices. Shared Responsibility = who owns what. Config = configuration compliance.'},
 {domain:'D5',type:'scenario',q:'A security officer asks: which employees accessed the company’s Amazon Bedrock API last week, what actions they performed, and from which IP addresses. Which service provides this?',opts:['Amazon CloudWatch','Amazon Inspector','AWS CloudTrail','AWS Config'],ans:2,exp:'AWS CloudTrail: logs every API call — who (IAM user/role), what action, when, from which IP. This is the primary audit trail for AWS. CloudWatch monitors performance metrics. Inspector scans for vulnerabilities. Config tracks resource configurations.'},
 {domain:'D5',type:'scenario',q:'A company stores API keys for their AI applications directly in their source code. Their security team flags this as a critical vulnerability. Which AWS service solves this?',opts:['AWS KMS','AWS IAM','AWS Secrets Manager','AWS Certificate Manager'],ans:2,exp:'AWS Secrets Manager: securely stores credentials and API keys outside of code, and automatically rotates them. KMS = manages encryption keys (not application secrets). IAM = access control policies. Never hardcode secrets in code.'},
+,
+{domain:'D1',type:'order',q:'Arrange these ML pipeline stages in the correct order from first to last.',items:['Data collection','Data pre-processing','Feature engineering','Model training','Model evaluation','Deployment','Monitoring'],exp:'The ML pipeline always follows: collect data → clean and format it → engineer features → train the model → evaluate quality → deploy to production → monitor for drift. You cannot train before collecting data; you cannot deploy before evaluating.'},
+{domain:'D2',type:'order',q:'Arrange these Foundation Model lifecycle stages in the correct order from first to last.',items:['Data selection','Model selection','Pre-training','Fine-tuning','Evaluation','Deployment','Feedback'],exp:'The FM lifecycle: select training data → choose model architecture → pre-train on massive corpus → fine-tune for specific task → evaluate quality → deploy to production → collect user feedback. Pre-training always precedes fine-tuning; evaluation always precedes deployment.'},
+{domain:'D3',type:'order',q:'Arrange these FM customisation approaches in order from LEAST expensive to MOST expensive.',items:['Prompt engineering','RAG','Fine-tuning','Continuous pre-training'],exp:'Cost order: Prompt engineering (free — just craft better prompts) → RAG (storage + retrieval costs) → Fine-tuning (GPU training on labelled data) → Continuous pre-training (massive compute, most expensive). Always start with the cheapest approach that meets your needs.'},
+{domain:'D1',type:'multi',q:'A fraud detection model has 99% accuracy but misses almost all actual fraud cases. Which TWO metrics would better reveal this problem? (Select 2)',opts:['Accuracy','Training loss','F1 Score','AUC-ROC','Perplexity'],ans:[2,3],exp:'F1 Score and AUC-ROC are both correct. On highly imbalanced datasets (fraud is rare), accuracy is misleading — a model predicting "not fraud" every time achieves 99% accuracy. F1 Score balances precision and recall for the minority class. AUC-ROC measures class separation ability across all thresholds. Both reveal the real performance that accuracy hides.'},
+{domain:'D2',type:'multi',q:'Which TWO of the following are officially named disadvantages of generative AI in the AWS exam guide? (Select 2)',opts:['Adaptability','Hallucination','Responsiveness','Interpretability','Simplicity'],ans:[1,3],exp:'Hallucination (model generates confident but false information) and Interpretability (difficulty explaining why the model produced a specific output) are both named GenAI disadvantages in the official exam guide. Adaptability, responsiveness, and simplicity are the named ADVANTAGES.'},
+{domain:'D3',type:'multi',q:'A company wants to build a RAG system using Amazon Bedrock that also prevents the model from discussing competitor products. Which TWO Bedrock features do they need? (Select 2)',opts:['Bedrock Agents','Bedrock Knowledge Bases','Bedrock Guardrails','SageMaker JumpStart','Amazon Kendra'],ans:[1,2],exp:'Bedrock Knowledge Bases provides managed RAG — connects documents to the FM for retrieval-augmented generation. Bedrock Guardrails adds content safety controls including topic blocking. Both are needed: Knowledge Bases for the RAG capability, Guardrails for the competitor topic restriction.'},
+{domain:'D3',type:'multi',q:'Which TWO FM adaptation techniques do NOT require modifying or retraining the model weights? (Select 2)',opts:['Fine-tuning','Prompt engineering','Continuous pre-training','RAG','RLHF'],ans:[1,3],exp:'Prompt engineering (craft better inputs — no model changes at all) and RAG (retrieve documents at query time — model weights unchanged) both adapt FM behaviour without touching model weights. Fine-tuning, continuous pre-training, and RLHF all modify the model weights through additional training.'},
+{domain:'D4',type:'multi',q:'Which TWO of the following are explicitly named legal risks of generative AI in the official AIF-C01 exam guide? (Select 2)',opts:['Model overfitting','Intellectual property infringement','Data leakage','Loss of customer trust','Model drift'],ans:[1,3],exp:'Intellectual property infringement (AI generates content too similar to copyrighted material) and Loss of customer trust (hallucinations or errors damage brand reputation) are both explicitly named in the AIF-C01 exam guide as GenAI legal risks. The five named risks are: IP infringement, biased outputs, loss of customer trust, end user risk, and hallucinations.'},
+{domain:'D5',type:'multi',q:'A healthcare company wants to ensure ML training data stored in S3 and all API calls to Amazon Bedrock are fully protected. Which TWO services address BOTH requirements? (Select 2)',opts:['AWS CloudTrail','AWS KMS','Amazon VPC','AWS PrivateLink','AWS Config'],ans:[2,3],exp:'Amazon VPC isolates the ML workload in a private network. AWS PrivateLink creates a private endpoint to Bedrock so API traffic never crosses the public internet. Together they ensure data stays within the AWS private network. KMS encrypts the stored data but does not control network traffic. CloudTrail and Config handle audit and compliance, not network isolation.'},
+{domain:'D1',type:'recall',q:'A dataset contains daily temperature readings from 500 sensors over 3 years, with timestamps. What type of data is this?',opts:['Structured tabular data','Unstructured data','Time-series data','Labelled classification data'],ans:2,exp:'Time-series data: ordered by time with timestamps, measuring continuous values over a period. Structured tabular data has rows/columns without temporal ordering. Unstructured = text, images, audio. The timestamp ordering and continuous measurement are the defining characteristics of time-series.'},
+{domain:'D1',type:'recall',q:'After cleaning raw customer data, a data scientist creates a new column called "days since last purchase" derived from existing columns. What ML pipeline stage is this?',opts:['Data pre-processing','Feature engineering','Model training','Data collection'],ans:1,exp:'Feature engineering: creating new meaningful inputs FROM already-cleaned data. Pre-processing = clean and format raw data (remove nulls, normalise). Feature engineering = derive new informative features from the clean data. These are sequential stages — pre-processing first, then feature engineering.'},
+{domain:'D1',type:'recall',q:'A company wants to calculate the exact tax on each sales transaction: tax = price × 0.08. Should they use an ML model for this?',opts:['Yes — ML improves all calculation accuracy','No — a simple deterministic rule already works perfectly','Yes — ML handles any numerical calculation better','No — ML cannot process financial data'],ans:1,exp:'Do NOT use ML when a deterministic rule already solves the problem perfectly. Tax = price × 0.08 is an exact formula — there is no pattern to learn and no benefit to ML. Use ML when the pattern is complex, unknown, or cannot be expressed as a simple rule. Using ML here would add cost and complexity with no benefit.'},
+{domain:'D1',type:'recall',q:'A deployed ML model that accurately detected fraud for 6 months begins missing new fraud patterns. What MLOps action is required?',opts:['Increase the model temperature','Redeploy the same model to a new endpoint','Re-train the model on recent data including new fraud patterns','Switch from batch to real-time inferencing'],ans:2,exp:'Model drift: when real-world data patterns change, a deployed model’s performance degrades. The correct MLOps response is to re-train on recent data that includes the new patterns. SageMaker Model Monitor detects this drift and alerts the team. Simply redeploying the same model does not fix the problem — it needs updated training data.'},
+{domain:'D1',type:'recall',q:'Which step of the ML pipeline involves selecting which input variables are most relevant and creating new derived variables to improve model performance?',opts:['Data collection','Data pre-processing','Feature engineering','Hyperparameter tuning'],ans:2,exp:'Feature engineering: selecting, transforming, and creating input variables (features) that best represent the problem for the ML model. Hyperparameter tuning adjusts model training settings after the model structure is chosen. Pre-processing cleans raw data. Feature engineering is the creative step between clean data and model training.'},
+{domain:'D1',type:'recall',q:'After initial training, a data scientist adjusts the learning rate and number of hidden layers to improve model accuracy. What is this process called?',opts:['Feature engineering','Data pre-processing','Transfer learning','Hyperparameter tuning'],ans:3,exp:'Hyperparameter tuning: adjusting model configuration settings (learning rate, layers, batch size) that are set BEFORE training begins and control how the model learns. These are different from model parameters (weights) which are learned during training. SageMaker Automatic Model Tuning (AMT) automates this process.'},
+{domain:'D2',type:'recall',q:'A RAG system needs to search a 500-page policy document. The document is split into 200-word sections before being stored as embeddings. What is this process called?',opts:['Tokenisation','Chunking','Fine-tuning','Embedding'],ans:1,exp:'Chunking: splitting large documents into smaller pieces before converting to embeddings for RAG storage. This is necessary because the full document may exceed the model’s context window, and smaller chunks enable more precise retrieval of only the relevant section. Tokenisation = breaking text into tokens for the model to process (different stage).'},
+{domain:'D2',type:'recall',q:'Amazon Titan Image Generator creates realistic images from text descriptions. What type of AI model architecture does it use?',opts:['Large language model (LLM)','Recurrent neural network (RNN)','Diffusion model','Decision tree'],ans:2,exp:'Diffusion model: the architecture used for image, audio, and video generation. Diffusion models learn by progressively adding noise to images and then learning to reverse that process — starting from noise and generating a clear image. LLMs generate text. RNNs are older sequential models. Decision trees are for structured/tabular ML.'},
+{domain:'D2',type:'recall',q:'A company measures GenAI business value by tracking how many website visitors complete a purchase after interacting with the AI assistant. What metric is this?',opts:['ROUGE score','Perplexity','Conversion rate','Average revenue per user (ARPU)'],ans:2,exp:'Conversion rate: percentage of users who complete a desired action (e.g., purchase, sign-up) after engaging with the AI. This is a business metric, not a technical metric. ROUGE and Perplexity are technical metrics measuring text quality. ARPU measures revenue generated per user. The exam distinguishes business metrics from technical metrics — conversion rate measures real-world business impact.'},
+{domain:'D2',type:'recall',q:'A company wants to deploy a foundation model for internal use only and needs full control over the deployment environment, networking, and model version. Which deployment approach fits?',opts:['Managed API via Amazon Bedrock — serverless, no infrastructure management','Self-hosted on Amazon EC2 or ECS — full control, you manage everything','Amazon Q Business — no-code enterprise assistant','AWS Lambda — serverless functions'],ans:1,exp:'Self-hosted on EC2/ECS: when you need full control over the deployment environment, networking isolation, model version pinning, and custom configuration. Bedrock = managed serverless API, AWS controls the infrastructure. Self-hosted = you control everything including the server, network, and model binary. Choose self-hosted when compliance or control requirements exceed what managed services offer.'},
+{domain:'D3',type:'recall',q:'Which FM customisation technique is most appropriate when a company needs the model to use highly specialised medical vocabulary and consistently follow clinical documentation formatting?',opts:['Prompt engineering — craft better instructions','RAG — retrieve medical documents at query time','Fine-tuning — retrain on clinical notes','Continuous pre-training — extend base knowledge'],ans:2,exp:'Fine-tuning: when you need the model to permanently adopt a specific vocabulary, writing style, or formatting convention. Prompt engineering and RAG affect responses at query time but do not change the model’s underlying style. Fine-tuning bakes the clinical terminology and documentation format into the model weights so every response consistently follows it.'},
+{domain:'D3',type:'scenario',q:'A company processes thousands of insurance claim PDFs, audio call recordings, and photos of damaged property daily. They need to automatically extract structured data from all three to feed into their AI claims pipeline. Which AWS service should they use?',opts:['Amazon Textract','Amazon Transcribe','Amazon Bedrock Data Automation','Amazon Rekognition'],ans:2,exp:'Bedrock Data Automation: handles multiple modalities (documents, audio, images, video) in a single managed service, extracting and structuring data for AI pipelines at scale without custom extraction code. Textract = documents/PDFs only. Transcribe = audio to text only. Rekognition = visual analysis only. Only Bedrock Data Automation handles all three modalities together.'},
+{domain:'D3',type:'scenario',q:'A hospital deploys an AI diagnostic model and must provide regulators with a formal document describing the model’s intended use, known limitations, performance on demographic subgroups, and ethical considerations. Which AWS feature produces this?',opts:['AWS Audit Manager','Amazon A2I','SageMaker Model Cards','SageMaker Clarify'],ans:2,exp:'SageMaker Model Cards: structured documentation of a model’s intended use, performance metrics, demographic subgroup results, and responsible AI considerations. Audit Manager collects compliance evidence. A2I manages human review workflows. Clarify detects bias and generates explainability reports. Model Cards is the formal documentation artefact for transparency and regulatory disclosure.'},
+{domain:'D3',type:'scenario',q:'A data science team builds 12 different ML models that all need the same "customer lifetime value" and "days since last purchase" input features. They want to ensure training and real-time serving always use identical feature values. Which service solves this?',opts:['SageMaker Data Wrangler','SageMaker Feature Store','SageMaker Autopilot','AWS Glue'],ans:1,exp:'SageMaker Feature Store: centralised repository for storing, sharing, and reusing ML features. Ensures the exact same feature values are used during both offline training and online real-time serving — preventing "training-serving skew." Data Wrangler = prepare and transform data. Autopilot = AutoML. Glue = ETL pipelines.'},
+{domain:'D3',type:'scenario',q:'A company evaluates two versions of their AI customer service model. Version A achieves ROUGE-L 0.78. Version B reduced average call resolution time by 35% and increased customer satisfaction scores by 20%. What is Version B’s evaluation approach?',opts:['Technical metric evaluation','Business metric evaluation','Benchmark dataset evaluation','Human evaluation'],ans:1,exp:'Business metric evaluation: measures real-world organisational impact (resolution time, customer satisfaction, ROI). ROUGE-L is a technical metric measuring text quality. The exam distinguishes these two: technical metrics measure model output quality, business metrics measure actual business outcomes. Both matter but for different stakeholders — technical for engineers, business for executives.'},
+{domain:'D4',type:'recall',q:'A company designs its AI loan decision system so that when it rejects an application, it shows the customer a plain-language explanation: "Your application was declined primarily because your debt-to-income ratio exceeds our threshold." Which responsible AI design approach is this?',opts:['Human-in-the-loop (HITL)','Human-centered design for explainable AI','Model Cards documentation','Subgroup analysis'],ans:1,exp:'Human-centered design for explainable AI (XAI): designing explanations that are meaningful and understandable for the specific audience affected by the decision. The explanation uses plain language appropriate for a customer, not technical jargon. HITL = human reviews the decision before it is made. Model Cards = document model behaviour for developers/regulators. Subgroup analysis = test fairness across groups.'},
+{domain:'D4',type:'scenario',q:'Before retraining their loan approval model, a company discovers that 40% of the "approved" labels in their training data were incorrectly assigned due to a data entry error. What action addresses this responsible AI concern?',opts:['Run subgroup analysis on the existing model','Perform label quality analysis and correct the mislabelled training data','Deploy SageMaker Model Monitor to detect drift','Use Bedrock Guardrails to filter outputs'],ans:1,exp:'Label quality analysis: identifying and correcting errors in training data labels before model training. Mislabelled training data directly causes biased and inaccurate models — the bias is introduced at the data creation stage. Subgroup analysis checks the trained model’s fairness. Model Monitor watches deployed models. Guardrails filters outputs. The problem here is in the training data labels, not the model.'},
+{domain:'D4',type:'scenario',q:'A healthcare AI model achieves 94% overall accuracy but only 71% accuracy for patients over 75 years old. What technique identifies this disparity?',opts:['Label quality analysis','Human-in-the-loop review','Subgroup analysis','Model Cards review'],ans:2,exp:'Subgroup analysis: measuring model performance separately for each demographic group (age, gender, ethnicity, language) to detect disparities. Overall accuracy hides this — 94% looks fine until you split by age group. SageMaker Clarify automates subgroup analysis. This is a core responsible AI practice for detecting unfair treatment of specific demographic groups.'},
+{domain:'D4',type:'scenario',q:'A company is choosing between a very large foundation model and a smaller specialised model. The large model is more accurate but uses 10x more compute energy. The smaller model meets accuracy requirements. Which responsible AI principle guides choosing the smaller model?',opts:['Fairness — all models must be equally powerful','Environmental and sustainability considerations','Robustness — use the most reliable model','Veracity — use the most accurate model'],ans:1,exp:'Environmental and sustainability considerations: responsible AI includes selecting the smallest model that meets requirements to reduce energy consumption and carbon footprint. Training and running large models consumes significant electricity. When a smaller model meets accuracy needs, choosing it reduces environmental impact. This is explicitly named in the AIF-C01 responsible AI guidelines.'},
+{domain:'D5',type:'recall',q:'A company’s policy states: "All customer data must be stored in AWS eu-west-1 (Ireland) and automatically deleted after 7 years." Which TWO governance concepts does this policy address?',opts:['Data residency and data retention','Encryption at rest and encryption in transit','Data lineage and data cataloging','IAM roles and least privilege'],ans:0,exp:'Data residency (WHERE data is stored — must remain in Ireland/eu-west-1) and data retention (HOW LONG data is kept — 7 years before deletion). These are two distinct data governance strategies that together define the geographic and temporal scope of data management. Encryption addresses security, not location or duration.'},
+{domain:'D5',type:'recall',q:'A company’s ML training pipeline writes data to Amazon S3 and calls Amazon Bedrock APIs. What is the difference between protecting the S3 data versus protecting the Bedrock API calls?',opts:['No difference — both use AWS KMS','S3 data uses encryption at rest (KMS); Bedrock API calls use encryption in transit (TLS/PrivateLink)','S3 uses PrivateLink; Bedrock uses KMS','Both use AWS Secrets Manager'],ans:1,exp:'Encryption at rest protects data sitting still in S3 storage — use AWS KMS for key management. Encryption in transit protects data moving between services (the API calls to Bedrock) — use TLS encryption and AWS PrivateLink to keep traffic off the public internet. Different states of data require different protection mechanisms.'},
+{domain:'D5',type:'scenario',q:'A company’s AI governance policy requires that all AI systems be reviewed every quarter, that all staff using AI complete annual responsible AI training, and that the company publicly discloses which business processes use AI. Which governance components are described?',opts:['Data residency, data retention, and data lineage','Review cadence, team training requirements, and transparency standards','IAM policies, CloudTrail logging, and AWS Config rules','Shared responsibility, encryption, and VPC isolation'],ans:1,exp:'Review cadence (quarterly reviews), team training requirements (annual responsible AI training), and transparency standards (public disclosure of AI use) are three of the six named governance protocol components in the AIF-C01 exam guide. The other three are policies, review strategies, and the Generative AI Security Scoping Matrix.'}
 ];
 
 const domainColors = {D1:'#34d399',D2:'#a78bfa',D3:'#fbbf24',D4:'#f87171',D5:'#4f9eff'};
@@ -254,6 +303,8 @@ function getFiltered() {
   if (currentFilter === 'all') return questions;
   if (currentFilter === 'scenario') return questions.filter(q => q.type === 'scenario');
   if (currentFilter === 'recall') return questions.filter(q => q.type === 'recall');
+  if (currentFilter === 'multi') return questions.filter(q => q.type === 'multi');
+  if (currentFilter === 'order') return questions.filter(q => q.type === 'order');
   return questions.filter(q => q.domain === currentFilter);
 }
 
@@ -270,8 +321,8 @@ function renderDomainScores() {
   let html = '';
   domains.forEach(d => {
     const qs = questions.filter(q => q.domain === d);
-    const answered = qs.filter((q,i) => answers[questions.indexOf(q)] !== undefined);
-    const correct = answered.filter(q => answers[questions.indexOf(q)] === q.ans);
+    const answered = qs.filter(q => answers[questions.indexOf(q)] !== undefined);
+    const correct = answered.filter(q => isCorrect(questions.indexOf(q), q));
     if (answered.length > 0) {
       const pct = Math.round(correct.length / answered.length * 100);
       const col = domainColors[d];
@@ -281,37 +332,177 @@ function renderDomainScores() {
   el.innerHTML = html;
 }
 
+function isCorrect(gi, q) {
+  const ans = answers[gi];
+  if (ans === undefined) return false;
+  if (q.type === 'multi') {
+    if (!Array.isArray(ans)) return false;
+    const correct = q.ans.slice().sort().join(',');
+    const given = ans.slice().sort().join(',');
+    return correct === given;
+  }
+  if (q.type === 'order') {
+    return ans === 'correct';
+  }
+  return ans === q.ans;
+}
+
 function renderQuiz() {
   const filtered = getFiltered();
   const container = document.getElementById('quiz-container');
   container.innerHTML = '';
   filtered.forEach((q, i) => {
     const gi = questions.indexOf(q);
-    const answered = answers[gi];
+    const answered = answers[gi] !== undefined;
     const color = domainColors[q.domain];
     const card = document.createElement('div');
     card.className = 'quiz-card';
     card.id = 'qcard-' + gi;
-    const isScenario = q.type === 'scenario';
-    const optHtml = q.opts.map((opt, oi) => {
-      let cls = '';
-      if (answered !== undefined) {
-        if (oi === q.ans) cls = answered === oi ? 'correct' : 'reveal';
-        else if (answered === oi) cls = 'wrong';
-      }
-      return '<button class="quiz-opt ' + cls + '" onclick="answer(' + gi + ',' + oi + ')" ' + (answered !== undefined ? 'disabled' : '') + '><span class="opt-letter">' + ['A','B','C','D'][oi] + '</span>' + opt + '</button>';
-    }).join('');
-    const typeTag = isScenario ? '<span class="quiz-type-tag">Scenario</span>' : '';
-    card.innerHTML = '<div class="quiz-q-meta"><span class="quiz-num">Q' + (i+1) + ' of ' + filtered.length + '</span><span class="quiz-domain-tag" style="background:' + color + '22;color:' + color + ';border:0.5px solid ' + color + '44">' + q.domain + '</span>' + typeTag + '</div><div class="quiz-question">' + q.q + '</div><div class="quiz-options">' + optHtml + '</div><div class="quiz-explanation ' + (answered !== undefined ? 'show' : '') + '"><strong>' + (answered === q.ans ? 'Correct!' : 'Incorrect.') + '</strong> ' + q.exp + '</div>';
+
+    const typeLabels = {recall:'Recall', scenario:'Scenario', multi:'Multi-select', order:'Ordering'};
+    const typeColors = {recall:'rgba(79,158,255,.15)', scenario:'rgba(251,191,36,.15)', multi:'rgba(232,121,249,.15)', order:'rgba(45,212,191,.15)'};
+    const typeFg = {recall:'#4f9eff', scenario:'#fbbf24', multi:'#e879f9', order:'#2dd4bf'};
+    const typeTag = '<span class="quiz-type-tag" style="background:' + (typeColors[q.type]||'') + ';color:' + (typeFg[q.type]||'') + ';border:0.5px solid ' + (typeFg[q.type]||'') + '44">' + (typeLabels[q.type]||q.type) + '</span>';
+
+    let bodyHtml = '';
+
+    if (q.type === 'order') {
+      bodyHtml = renderOrderCard(gi, q, answered, color, typeTag, i, filtered.length);
+    } else if (q.type === 'multi') {
+      bodyHtml = renderMultiCard(gi, q, answered, color, typeTag, i, filtered.length);
+    } else {
+      bodyHtml = renderSingleCard(gi, q, answered, color, typeTag, i, filtered.length);
+    }
+
+    card.innerHTML = bodyHtml;
     container.appendChild(card);
   });
   updateProgress();
   renderDomainScores();
 }
 
-function answer(gi, chosen) {
+function renderSingleCard(gi, q, answered, color, typeTag, i, total) {
+  const optHtml = q.opts.map((opt, oi) => {
+    let cls = '';
+    if (answered) {
+      if (oi === q.ans) cls = answers[gi] === oi ? 'correct' : 'reveal';
+      else if (answers[gi] === oi) cls = 'wrong';
+    }
+    return '<button class="quiz-opt ' + cls + '" onclick="answerSingle(' + gi + ',' + oi + ')" ' + (answered ? 'disabled' : '') + '><span class="opt-letter">' + ['A','B','C','D'][oi] + '</span>' + opt + '</button>';
+  }).join('');
+  return '<div class="quiz-q-meta"><span class="quiz-num">Q' + (i+1) + ' of ' + total + '</span><span class="quiz-domain-tag" style="background:' + color + '22;color:' + color + ';border:0.5px solid ' + color + '44">' + q.domain + '</span>' + typeTag + '</div>' +
+    '<div class="quiz-question">' + q.q + '</div>' +
+    '<div class="quiz-options">' + optHtml + '</div>' +
+    '<div class="quiz-explanation ' + (answered ? 'show' : '') + '"><strong>' + (answered ? (isCorrect(gi,q) ? 'Correct!' : 'Incorrect.') : '') + '</strong> ' + q.exp + '</div>';
+}
+
+function renderMultiCard(gi, q, answered, color, typeTag, i, total) {
+  const selected = (answers[gi] !== undefined) ? answers[gi] : (answers['multi_sel_' + gi] || []);
+  const optHtml = q.opts.map((opt, oi) => {
+    let cls = 'quiz-opt multi-opt';
+    const isSelected = Array.isArray(selected) && selected.includes(oi);
+    const isCorrectOpt = q.ans.includes(oi);
+    if (answered) {
+      if (isCorrectOpt && isSelected) cls += ' correct';
+      else if (isCorrectOpt && !isSelected) cls += ' reveal';
+      else if (!isCorrectOpt && isSelected) cls += ' wrong';
+    } else if (isSelected) {
+      cls += ' selected';
+    }
+    return '<button class="' + cls + '" onclick="toggleMulti(' + gi + ',' + oi + ')" ' + (answered ? 'disabled' : '') + '>' +
+      '<span class="opt-check">' + (isSelected ? '\u2713' : '\u25a1') + '</span><span>' + opt + '</span></button>';
+  }).join('');
+  const submitBtn = answered ? '' : '<button class="btn primary" onclick="submitMulti(' + gi + ')" style="margin-top:8px" id="submit-multi-' + gi + '">Submit answer</button>';
+  const expCls = answered ? 'quiz-explanation show' : 'quiz-explanation';
+  const expText = answered ? '<strong>' + (isCorrect(gi,q) ? 'Correct!' : 'Incorrect.') + '</strong> ' + q.exp : '';
+  return '<div class="quiz-q-meta"><span class="quiz-num">Q' + (i+1) + ' of ' + total + '</span><span class="quiz-domain-tag" style="background:' + color + '22;color:' + color + ';border:0.5px solid ' + color + '44">' + q.domain + '</span>' + typeTag + '</div>' +
+    '<div class="quiz-question">' + q.q + '</div>' +
+    '<div class="quiz-options">' + optHtml + '</div>' +
+    submitBtn +
+    '<div class="' + expCls + '">' + expText + '</div>';
+}
+
+function renderOrderCard(gi, q, answered, color, typeTag, i, total) {
+  const correct = isCorrect(gi, q);
+  let items = answered ? q.items : (answers['order_state_' + gi] ? answers['order_state_' + gi] : [...q.items].sort(() => Math.random() - 0.5));
+  if (!answered && !answers['order_state_' + gi]) answers['order_state_' + gi] = [...items];
+
+  const itemsHtml = items.map((item, idx) => {
+    let style = '';
+    if (answered) {
+      style = item === q.items[idx] ? 'border-color:#34d399;background:rgba(52,211,153,.08);color:#34d399' : 'border-color:#f87171;background:rgba(248,113,113,.08);color:#f87171';
+    }
+    return '<div class="order-item" style="' + style + '" data-gi="' + gi + '" data-idx="' + idx + '">' +
+      '<span class="order-num">' + (idx+1) + '</span><span class="order-text">' + item + '</span>' +
+      (!answered ? '<span class="order-btns"><button onclick="moveOrder(' + gi + ',' + idx + ',-1)">&#9650;</button><button onclick="moveOrder(' + gi + ',' + idx + ',1)">&#9660;</button></span>' : '') +
+      '</div>';
+  }).join('');
+
+  const submitBtn = answered ? '' : '<button class="btn primary" onclick="submitOrder(' + gi + ')" style="margin-top:8px">Submit order</button>';
+  const expCls = answered ? 'quiz-explanation show' : 'quiz-explanation';
+  const expText = answered ? '<strong>' + (correct ? 'Correct!' : 'Incorrect. Correct order:') + '</strong> ' + (correct ? '' : '<ol style="margin:6px 0 6px 18px">' + q.items.map(it => '<li style="font-size:11px;margin:2px 0">' + it + '</li>').join('') + '</ol>') + q.exp : '';
+
+  return '<div class="quiz-q-meta"><span class="quiz-num">Q' + (i+1) + ' of ' + total + '</span><span class="quiz-domain-tag" style="background:' + color + '22;color:' + color + ';border:0.5px solid ' + color + '44">' + q.domain + '</span>' + typeTag + '</div>' +
+    '<div class="quiz-question">' + q.q + '</div>' +
+    '<div class="order-list" id="order-list-' + gi + '">' + itemsHtml + '</div>' +
+    submitBtn +
+    '<div class="' + expCls + '">' + expText + '</div>';
+}
+
+function answerSingle(gi, chosen) {
   if (answers[gi] !== undefined) return;
   answers[gi] = chosen;
+  renderQuiz();
+  updateScore();
+}
+
+function toggleMulti(gi, oi) {
+  if (answers[gi] !== undefined) return;
+  const key = 'multi_sel_' + gi;
+  if (!answers[key]) answers[key] = [];
+  const arr = answers[key];
+  const idx = arr.indexOf(oi);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(oi);
+  const q = questions[gi];
+  const filtered = getFiltered();
+  const i = filtered.indexOf(q);
+  const color = domainColors[q.domain];
+  const typeTag = '<span class="quiz-type-tag" style="background:rgba(232,121,249,.15);color:#e879f9;border:0.5px solid #e879f944">Multi-select</span>';
+  document.getElementById('qcard-' + gi).innerHTML = renderMultiCard(gi, q, false, color, typeTag, i, filtered.length);
+}
+
+function submitMulti(gi) {
+  if (answers[gi] !== undefined) return;
+  const key = 'multi_sel_' + gi;
+  answers[gi] = answers[key] ? [...answers[key]] : [];
+  renderQuiz();
+  updateScore();
+}
+
+function moveOrder(gi, idx, dir) {
+  if (answers[gi] !== undefined) return;
+  const items = answers['order_state_' + gi];
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= items.length) return;
+  const temp = items[idx];
+  items[idx] = items[newIdx];
+  items[newIdx] = temp;
+  // Re-render card
+  const q = questions[gi];
+  const filtered = getFiltered();
+  const i = filtered.indexOf(q);
+  const color = domainColors[q.domain];
+  const typeTag = '<span class="quiz-type-tag" style="background:rgba(45,212,191,.15);color:#2dd4bf;border:0.5px solid #2dd4bf44">Ordering</span>';
+  document.getElementById('qcard-' + gi).innerHTML = renderOrderCard(gi, q, false, color, typeTag, i, filtered.length);
+}
+
+function submitOrder(gi) {
+  if (answers[gi] !== undefined) return;
+  const q = questions[gi];
+  const userOrder = answers['order_state_' + gi];
+  const isRight = userOrder && userOrder.join('|') === q.items.join('|');
+  answers[gi] = isRight ? 'correct' : 'wrong';
   renderQuiz();
   updateScore();
 }
@@ -325,7 +516,7 @@ function updateProgress() {
 function updateScore() {
   const filtered = getFiltered();
   const answered = filtered.filter(q => answers[questions.indexOf(q)] !== undefined);
-  const correct = answered.filter(q => answers[questions.indexOf(q)] === q.ans);
+  const correct = answered.filter(q => isCorrect(questions.indexOf(q), q));
   if (!answered.length) { document.getElementById('score-display').textContent = ''; return; }
   document.getElementById('score-display').textContent = 'Score: ' + correct.length + '/' + answered.length + ' (' + Math.round(correct.length / answered.length * 100) + '%)';
 }
@@ -337,5 +528,4 @@ function resetQuiz() {
   document.getElementById('domain-scores').innerHTML = '';
 }
 
-renderQuiz();
-</script></body></html>
+renderQuiz();</script></body></html>
