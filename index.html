@@ -233,6 +233,37 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI
 .ec-tip{background:rgba(249,115,22,.07);border:0.5px solid rgba(249,115,22,.25);border-radius:7px;padding:9px 12px;margin-bottom:14px;font-size:11px;color:#fb923c;line-height:1.5;}
 .ec-tip strong{color:#f97316;}
 @media(max-width:700px){.algo-grid{grid-template-columns:1fr 1fr;}}
+
+.search-wrap{flex:1;max-width:320px;position:relative;margin-left:8px;}
+.search-input{width:100%;background:rgba(255,255,255,.06);border:0.5px solid var(--border2);border-radius:20px;padding:5px 14px 5px 32px;font-size:12px;color:var(--text);outline:none;transition:all .15s;}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.2);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;}
+.search-go-btn{position:absolute;right:28px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;color:#000;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0;}
+.search-go-btn:hover{opacity:.85;}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;cursor:pointer;display:none;background:none;border:none;padding:0;line-height:1;}
+.search-results{position:fixed;top:82px;left:50%;transform:translateX(-50%);width:min(580px,90vw);background:#1a1f2e;border:0.5px solid rgba(255,255,255,.15);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:9999;max-height:420px;overflow-y:auto;display:none;}
+.search-results::-webkit-scrollbar{width:4px;}
+.search-results::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.search-results.open{display:block;}
+.search-result-item{padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--border);transition:background .1s;}
+.search-result-item:last-child{border-bottom:none;}
+.search-result-item:hover{background:var(--surface2);}
+.sr-header{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
+.sr-term{font-size:12px;font-weight:600;color:var(--text);}
+.sr-tab{font-size:9px;padding:2px 7px;border-radius:8px;font-weight:500;}
+.sr-snippet{font-size:11px;color:var(--muted);line-height:1.4;}
+.sr-snippet mark{background:rgba(79,158,255,.25);color:var(--accent);border-radius:2px;padding:0 2px;}
+.sr-empty{padding:16px 14px;font-size:12px;color:var(--muted);text-align:center;}
+.sr-count{padding:8px 14px;font-size:10px;color:var(--muted);border-bottom:0.5px solid var(--border);background:var(--surface2);border-radius:10px 10px 0 0;}
+.highlight-card{animation:highlightPulse 1.5s ease-out;}
+.search-found-pin{cursor:pointer;}.search-found-pin:hover{opacity:.8;}
+@keyframes highlightPulse{0%{box-shadow:0 0 0 3px rgba(79,158,255,.6);}100%{box-shadow:none;}}
+
+.sr-item{padding:10px 14px;cursor:pointer;border-bottom:0.5px solid rgba(255,255,255,.07);transition:background .1s;}
+.sr-item:last-child{border-bottom:none;}
+.sr-item:hover,.sr-item:focus{background:rgba(255,255,255,.04);outline:none;}
+.sh-wrap{border:2px solid #4f9eff !important;border-radius:10px !important;padding:4px !important;margin:8px 0 !important;box-shadow:0 0 0 4px rgba(79,158,255,.2) !important;}
 </style>
 </head>
 <body>
@@ -243,7 +274,13 @@ html,body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI
     <span class="epill"><span>90</span> min</span>
     <span class="epill">Pass: <span>700</span>/1000</span>
     <span class="epill">No coding required</span>
+    <div class="search-wrap" id="search-wrap">
+      <span class="search-icon">&#9906;</span>
+      <input class="search-input" id="search-input" type="text" placeholder="Search terms, services, concepts..." autocomplete="off">
+      <button class="search-clear" id="search-clear" style="display:none">&#10005;</button>
+    </div>
   </div>
+  <div class="search-results" id="search-results" style="display:none"></div>
   <div class="weight-bar">
     <div class="wb" style="width:20%;background:var(--d1)"></div>
     <div class="wb" style="width:24%;background:var(--d2)"></div>
@@ -1474,4 +1511,447 @@ flashcards.push(
 {front:'Two-constraint exam questions — what is the strategy?',back:'Step 1: identify BOTH requirements from the scenario.\nStep 2: eliminate answers that only satisfy one requirement.\nStep 3: pick the answer that satisfies both simultaneously.\nCommon patterns:\n(Knowledge + safety) = RAG + Guardrails\n(Generate + label accurately) = Titan Image Generator + Ground Truth\n(Classify + explain) = Decision Tree\n(Current data + no retraining) = RAG',domain:'D1',cat:'concept',status:'new'}
 );
 
-renderQuiz();</script></body></html>
+const searchIndex = [
+{term:'AI → ML → Deep Learning → GenAI Hierarchy',snippet:'AI (Artificial Intelligence) — Broadest field — any machine that simulates human intelligence ML (Machine Learning) — Su',tab:'d1',type:'concept'},
+{term:'Supervised / Unsupervised / Reinforcement Learning',snippet:'Supervised — Labelled data (input + correct answer). Learns to predict. Used for classification (categories) and regress',tab:'d1',type:'concept'},
+{term:'ML Pipeline — All 9 Stages',snippet:'1. Data Collection — Gather raw data from databases, APIs, sensors, or files 2. EDA (Exploratory Data Analysis) — Explor',tab:'d1',type:'concept'},
+{term:'Model Evaluation Metrics (Performance + Business)',snippet:'Technical metrics (measure model quality) Accuracy — Percentage of predictions that are correct. Misleading on imbalance',tab:'d1',type:'concept'},
+{term:'When to Use vs When NOT to Use AI/ML',snippet:'Use AI/ML when: Decision-making at scale — Millions of decisions per day that no human team could handle (fraud checks, ',tab:'d1',type:'concept'},
+{term:'Overfitting, Underfitting & Bias-Variance Tradeoff',snippet:'Diagnose first: High training accuracy + low test accuracy — Overfitting (high variance) — model memorised training data',tab:'d1',type:'concept'},
+{term:'Train / Validation / Test Split and Data Leakage',snippet:'Training set — Model learns the pattern from this data Validation set — Tune hyperparameters and monitor overfitting DUR',tab:'d1',type:'concept'},
+{term:'ML Algorithms by Interpretability',snippet:'The exam pairs algorithm selection with explainability requirements. Know which algorithms you can explain and which are',tab:'d1',type:'concept'},
+{term:'Synthetic Data Generation',snippet:'What it is — Using GenAI (diffusion models, LLMs) to generate artificial training data When to use — Real data is scarce',tab:'d1',type:'concept'},
+{term:'Neural Networks & Deep Learning',snippet:'Neural network — Computing system of interconnected nodes (neurons) organised in layers — inspired by the human brain La',tab:'d1',type:'concept'},
+{term:'Data Types in AI',snippet:'Structured — Rows and columns — databases, spreadsheets, CSV files. Easy to query and analyse Unstructured — Text, image',tab:'d1',type:'concept'},
+{term:'Classification vs Regression',snippet:'Classification — Output is a category label. Examples: spam/not spam, approve/deny, type A/B/C. Can be binary (2 classes',tab:'d1',type:'concept'},
+{term:'Batch vs Real-time Inferencing',snippet:'Batch inferencing — Process large volumes of inputs together in one run. Results are delayed (minutes to hours). High th',tab:'d1',type:'concept'},
+{term:'Model Sources: Open-Source vs Custom',snippet:'Open-source pre-trained — Publicly available models (Llama, Mistral) deployable via SageMaker JumpStart. Fast start, low',tab:'d1',type:'concept'},
+{term:'Deployment: Managed API vs Self-Hosted',snippet:'Managed API (Bedrock / SageMaker endpoints) — AWS hosts and runs the model. No server management. Scale automatically. P',tab:'d1',type:'concept'},
+{term:'MLOps Fundamentals',snippet:'Experimentation — Track and compare different model runs, hyperparameters, and results systematically Repeatable process',tab:'d1',type:'concept'},
+{term:'AI Adds Value: 3 Core Reasons',snippet:'Decision-making at scale — AI makes millions of consistent decisions per day — fraud checks, content recommendations, ri',tab:'d1',type:'concept'},
+{term:'Foundation Model Lifecycle — 7 Stages',snippet:'1. Data selection — Choose which datasets to use for training the base model 2. Model selection — Choose the model archi',tab:'d2',type:'concept'},
+{term:'GenAI Advantages vs Disadvantages',snippet:'Advantages (3 named in exam guide): Adaptability — Works across many different tasks without task-specific training Resp',tab:'d2',type:'concept'},
+{term:'Token / Chunking / Embedding / Vector — Core GenAI Terms',snippet:'Token — The smallest unit an LLM processes (~0.75 words). LLMs read tokens, not characters or whole words Context window',tab:'d2',type:'concept'},
+{term:'Cost Tradeoffs: Token Pricing vs Provisioned Throughput',snippet:'Token-based pricing — Pay per token processed (input + output). No commitment. Best for variable, unpredictable workload',tab:'d2',type:'concept'},
+{term:'Business Value Metrics for GenAI Applications',snippet:'Conversion rate — Percentage of users completing a desired action after using the AI (purchase, sign-up) ARPU — Average ',tab:'d2',type:'concept'},
+{term:'Transformer Architecture',snippet:'What it is — The neural network architecture powering all modern LLMs Self-attention — Key mechanism: reads the entire s',tab:'d2',type:'concept'},
+{term:'Multimodal Models',snippet:'What it is — AI models that process and generate multiple types of data in a single model Modalities — Text, images, aud',tab:'d2',type:'concept'},
+{term:'Diffusion Models',snippet:'What it is — A generative model architecture used for image, audio, and video generation How it works — Learns to progre',tab:'d2',type:'concept'},
+{term:'AWS Advantages for GenAI Applications',snippet:'Accessibility — Powerful FMs available via simple API call — no hardware needed Lower barrier to entry — No ML expertise',tab:'d2',type:'concept'},
+{term:'LLM as a Service — Amazon Q Variants',snippet:'Amazon Q Developer — AI coding assistant integrated into IDEs and AWS Console. Writes, explains, debugs, and optimises c',tab:'d2',type:'concept'},
+{term:'Amazon Nova',snippet:'What it is — Amazon newest FM family (2024+) available through Amazon Bedrock Modalities — Supports text generation, ima',tab:'d2',type:'concept'},
+{term:'FM Customisation: Which Approach When?',snippet:'Prompt engineering — Craft better instructions. No training, no model changes, no cost. Use first In-context learning — ',tab:'d3',type:'concept'},
+{term:'Bedrock Sub-features: Knowledge Bases vs Agents vs Guardrails',snippet:'Knowledge Bases — Managed RAG — connects your documents to a FM. Handles chunking, embedding, vector storage, and retrie',tab:'d3',type:'concept'},
+{term:'Technical Metrics vs Business Metrics for FM Evaluation',snippet:'Technical metrics (measure model output quality — engineers care) ROUGE — Text overlap for summarisation quality BLEU — ',tab:'d3',type:'concept'},
+{term:'RAG Architecture — How it Works',snippet:'Setup (done once): 1. Chunk — Split large documents into smaller sections 2. Embed — Convert each chunk into a numerical',tab:'d3',type:'concept'},
+{term:'Prompt Engineering — All Techniques + All Risks',snippet:'Techniques: Zero-shot — No examples — ask directly Single/few-shot — 1 or 2–5 examples in the prompt to guide format Cha',tab:'d3',type:'concept'},
+{term:'FM-Specific Explainability Mechanisms',snippet:'Attention weights — Show which input tokens the FM focused on when generating each output — primary FM-specific explaina',tab:'d3',type:'concept'},
+{term:'Transfer Learning',snippet:'What it is — Using a model already trained on one task as the starting point for a different but related task Why it hel',tab:'d3',type:'concept'},
+{term:'FM Evaluation Metrics — Know All 5 Match the metric to the task. Th...',snippet:'Human evaluation — Real people rate model outputs on helpfulness, accuracy, safety, and tone. Slow, expensive, but most ',tab:'d3',type:'concept'},
+{term:'Model Selection Criteria',snippet:'Modality — Does the use case need text only, or also images/audio/video? Performance — What accuracy level is required? ',tab:'d3',type:'concept'},
+{term:'Bedrock Data Automation',snippet:'Automatically extracts, classifies, and structures information from unstructured content (PDFs, images, audio, video) at',tab:'d3',type:'concept'},
+{term:'Agentic AI & Multi-step Tasks',snippet:'What it is — AI systems where an LLM autonomously plans and executes a sequence of actions to complete a goal How it dif',tab:'d3',type:'concept'},
+{term:'8 Responsible AI Principles',snippet:'Fairness — Model treats all demographic groups equally — no discrimination Inclusivity — Training data represents all re',tab:'d4',type:'concept'},
+{term:'All GenAI Legal Risks — 5 Named in Exam Guide',snippet:'Intellectual property infringement — AI generates content too similar to copyrighted material — exposes company to IP la',tab:'d4',type:'concept'},
+{term:'Bias Detection Tools — All 6',snippet:'SageMaker Clarify — Automated bias detection and explainability reports — used BEFORE deployment SageMaker Model Monitor',tab:'d4',type:'concept'},
+{term:'Transparent vs Explainable Models — and the Tradeoff',snippet:'Transparent — Open about HOW the model works in general — training data, architecture, limitations are documented Explai',tab:'d4',type:'concept'},
+{term:'Partial Dependence Plot (PDP)',snippet:'What it shows — How ONE input feature affects predictions while all other features are held constant Purpose — Explains ',tab:'d4',type:'concept'},
+{term:'Responsible Data: Dataset Requirements & Bias Effects',snippet:'What a responsible dataset needs: Inclusivity — Represents all relevant demographic groups (age, gender, ethnicity, lang',tab:'d4',type:'concept'},
+{term:'Explainability in Practice',snippet:'The tradeoff: Simple models (Decision Tree, Logistic Regression) — High interpretability, lower accuracy. Choose when re',tab:'d4',type:'concept'},
+{term:'Measures of Trustworthiness & Truthfulness',snippet:'Subgroup analysis — Measure model performance separately for each demographic group Label quality analysis — Verify trai',tab:'d4',type:'concept'},
+{term:'Shared Responsibility Model for AI',snippet:'AWS is responsible for: Infrastructure — Physical data centres, hardware, network, and hypervisor Platform security — Se',tab:'d5',type:'concept'},
+{term:'AI-Specific Security Threats',snippet:'Prompt injection — Attacker hides malicious instructions in user input to override model behaviour Data poisoning — Corr',tab:'d5',type:'concept'},
+{term:'Data Governance Strategies — 6 Components',snippet:'Data lifecycle — Rules for how data moves from creation through use to deletion Logging — Record all data access and mod',tab:'d5',type:'concept'},
+{term:'Governance Protocols — 6 Components',snippet:'Policies — Written rules defining how AI systems may be used in the organisation Review cadence — Scheduled regular revi',tab:'d5',type:'concept'},
+{term:'Encryption: At Rest vs In Transit',snippet:'At rest — Data stored on disk — encrypted using AWS KMS. Even physical access to storage yields unreadable data In trans',tab:'d5',type:'concept'},
+{term:'IAM — Identity & Access Management',snippet:'What it does — Controls who can access which AWS resources and what actions they can perform Least privilege — Grant onl',tab:'d5',type:'concept'},
+{term:'Privacy-Enhancing Technologies (PETs)',snippet:'Differential privacy — Adds statistical noise to data so individual records cannot be identified from aggregate results ',tab:'d5',type:'concept'},
+{term:'Data Protection, Lineage & Access Control',snippet:'Access control: Data access control — Restrict who can read, modify, or delete training data using IAM, S3 bucket polici',tab:'d5',type:'concept'},
+{term:'Compliance Frameworks',snippet:'GDPR — EU data privacy law — controls over personal data collection, processing, and residency HIPAA — US health data pr',tab:'d5',type:'concept'},
+{term:'Amazon Rekognition',snippet:'Analyses images and video to detect and understand visual content — faces, objects, scenes, activities, and inappropriat',tab:'svc',type:'service'},
+{term:'Amazon Textract',snippet:'Extracts printed text, handwriting, tables, and form fields from scanned documents, PDFs, and images — goes beyond simpl',tab:'svc',type:'service'},
+{term:'Amazon Transcribe',snippet:'Converts spoken audio into written text — automatic speech recognition (ASR).',tab:'svc',type:'service'},
+{term:'Amazon Polly',snippet:'Converts written text into natural-sounding spoken audio — text-to-speech.',tab:'svc',type:'service'},
+{term:'Amazon Translate',snippet:'Translates text between 75+ languages using neural machine translation.',tab:'svc',type:'service'},
+{term:'Amazon Comprehend',snippet:'Analyses text to extract meaning — sentiment (positive/negative/neutral), named entities (people, places, organisations)',tab:'svc',type:'service'},
+{term:'Amazon Lex',snippet:'Builds conversational chatbots and voice interfaces — understands user intent and manages multi-turn conversation flows.',tab:'svc',type:'service'},
+{term:'Amazon SageMaker AI',snippet:'Fully managed end-to-end ML platform covering the complete pipeline: data prep, training, tuning, deployment, and monito',tab:'svc',type:'service'},
+{term:'SageMaker Autopilot',snippet:'Automatically selects the best ML algorithm, trains models, and tunes hyperparameters — AutoML with no ML expertise requ',tab:'svc',type:'service'},
+{term:'SageMaker Clarify',snippet:'Detects bias in training data and models, and generates explainability reports showing which features most influenced pr',tab:'svc',type:'service'},
+{term:'SageMaker Model Monitor',snippet:'Continuously monitors deployed ML models in production for data drift, model drift, and quality degradation — sends aler',tab:'svc',type:'service'},
+{term:'SageMaker Feature Store',snippet:'Centralised repository for storing, sharing, and reusing ML features across teams and models — ensures the same features',tab:'svc',type:'service'},
+{term:'SageMaker Data Wrangler',snippet:'Visual, no-code tool for data preparation — importing, cleaning, transforming, and visualising data for ML training.',tab:'svc',type:'service'},
+{term:'SageMaker JumpStart',snippet:'Catalogue of pre-trained and open-source foundation models (Llama, Mistral, Stable Diffusion) ready to deploy or fine-tu',tab:'svc',type:'service'},
+{term:'Amazon Bedrock',snippet:'Managed serverless API providing access to foundation models from multiple providers — Anthropic (Claude), Meta (Llama),',tab:'svc',type:'service'},
+{term:'Amazon Nova',snippet:'Amazon\u2019s latest family of foundation models (2024+) available through Bedrock — includes text, image, and video generati',tab:'svc',type:'service'},
+{term:'Amazon Titan',snippet:'Amazon\u2019s original family of foundation models — text generation, text embeddings, and image generation. Older generation',tab:'svc',type:'service'},
+{term:'Bedrock Knowledge Bases',snippet:'Fully managed RAG implementation — connects your documents to a foundation model. Handles chunking, embedding, vector st',tab:'svc',type:'service'},
+{term:'Bedrock Agents',snippet:'Enables foundation models to autonomously plan and execute multi-step tasks — calling external APIs, querying databases,',tab:'svc',type:'service'},
+{term:'Bedrock Guardrails',snippet:'Configurable safety controls applied to all FM inputs and outputs — filters harmful content, blocks specified topics, re',tab:'svc',type:'service'},
+{term:'Bedrock Data Automation',snippet:'Automatically extracts, classifies, and structures information from unstructured content (PDFs, images, audio, video) at',tab:'svc',type:'service'},
+{term:'Amazon Q Developer',snippet:'AI coding assistant integrated into IDEs and the AWS Management Console — writes, explains, debugs, and optimises code, ',tab:'svc',type:'service'},
+{term:'Amazon Q Business',snippet:'GenAI assistant for organisations — connects to company documents, databases, and systems so employees can ask natural l',tab:'svc',type:'service'},
+{term:'Amazon Kendra',snippet:'Intelligent enterprise search — uses ML to understand natural language queries and find relevant documents across intern',tab:'svc',type:'service'},
+{term:'Amazon Personalize',snippet:'Managed real-time personalisation and recommendation engine — learns from user behaviour to deliver personalised product',tab:'svc',type:'service'},
+{term:'Amazon Forecast',snippet:'Managed time-series forecasting — predicts future values based on historical data patterns, automatically handling seaso',tab:'svc',type:'service'},
+{term:'Amazon Fraud Detector',snippet:'Managed ML service that detects fraudulent activities in real time — online transactions, account creation, fake reviews',tab:'svc',type:'service'},
+{term:'Amazon Augmented AI (A2I)',snippet:'Creates human review workflows for ML predictions — routes low-confidence or sensitive AI outputs to human reviewers bef',tab:'svc',type:'service'},
+{term:'Amazon Rekognition — Use this when',snippet:'Use this when The company has images or video and needs to know what is in them — detect faces, identify objects, flag u',tab:'svc',type:'service'},
+{term:'Amazon Textract — Use this when',snippet:'Use this when The company has scanned forms, PDFs, or documents and needs to extract the written content — text, tables,',tab:'svc',type:'service'},
+{term:'Amazon Transcribe — Use this when',snippet:'Use this when The company has audio or video recordings and needs them converted to text — call centre recordings, meeti',tab:'svc',type:'service'},
+{term:'Amazon Polly — Use this when',snippet:'Use this when The company has text and needs it spoken aloud — voice interfaces, accessibility features, audio versions ',tab:'svc',type:'service'},
+{term:'Amazon Translate — Use this when',snippet:'Use this when The company needs content converted from one language to another at scale — websites, documents, product d',tab:'svc',type:'service'},
+{term:'Amazon Comprehend — Use this when',snippet:'Use this when The company has text and needs to understand what it means or contains — detect customer sentiment in revi',tab:'svc',type:'service'},
+{term:'Amazon Lex — Use this when',snippet:'Use this when The company needs to build a chatbot or voice assistant that holds a conversation with users — customer se',tab:'svc',type:'service'},
+{term:'Amazon SageMaker AI — Use this when',snippet:'Use this when The company needs to build, train, or deploy their own custom ML models — not use a pre-built service. Any',tab:'svc',type:'service'},
+{term:'SageMaker Autopilot — Use this when',snippet:'Use this when The company wants ML model results but does not have ML expertise or time to manually experiment with algo',tab:'svc',type:'service'},
+{term:'SageMaker Clarify — Use this when',snippet:'Use this when The company needs to check a model for fairness issues before deployment, or explain to regulators why the',tab:'svc',type:'service'},
+{term:'SageMaker Model Monitor — Use this when',snippet:'Use this when The company has a model already deployed in production and needs ongoing alerts if its accuracy or data qu',tab:'svc',type:'service'},
+{term:'SageMaker Feature Store — Use this when',snippet:'Use this when Multiple ML models need to share the same input features, or the team wants to prevent inconsistency betwe',tab:'svc',type:'service'},
+{term:'SageMaker Data Wrangler — Use this when',snippet:'Use this when The company needs to prepare and clean raw data for ML training without writing extensive code — visual ED',tab:'svc',type:'service'},
+{term:'SageMaker JumpStart — Use this when',snippet:'Use this when The company wants to deploy or fine-tune an open-source foundation model (like Llama) on AWS infrastructur',tab:'svc',type:'service'},
+{term:'Amazon Bedrock — Use this when',snippet:'Use this when The company wants to use a powerful foundation model via API without managing servers — build GenAI applic',tab:'svc',type:'service'},
+{term:'Amazon Nova — Use this when',snippet:'Use this when The question refers to "the latest Amazon FM family", "Amazon\u2019s newest foundation models", or needs multim',tab:'svc',type:'service'},
+{term:'Amazon Titan — Use this when',snippet:'Use this when The question specifically names Titan, or asks about Amazon-built embedding models for RAG (Titan Embeddin',tab:'svc',type:'service'},
+{term:'Bedrock Knowledge Bases — Use this when',snippet:'Use this when The company wants a foundation model to answer questions using their private documents, and wants AWS to m',tab:'svc',type:'service'},
+{term:'Bedrock Agents — Use this when',snippet:'Use this when The company needs AI that does not just answer questions but takes actions — booking, scheduling, ordering',tab:'svc',type:'service'},
+{term:'Bedrock Guardrails — Use this when',snippet:'Use this when The company needs to ensure its FM-powered application never produces harmful, off-topic, or private conte',tab:'svc',type:'service'},
+{term:'Bedrock Data Automation — Use this when',snippet:'Use this when The company has large volumes of unstructured documents, audio recordings, or images and needs to extract ',tab:'svc',type:'service'},
+{term:'Amazon Q Developer — Use this when',snippet:'Use this when The company\u2019s software developers need AI assistance while writing code — code suggestions, bug fixes, cod',tab:'svc',type:'service'},
+{term:'Amazon Q Business — Use this when',snippet:'Use this when The company wants employees to ask questions about internal policies, documents, databases, or business sy',tab:'svc',type:'service'},
+{term:'Amazon Kendra — Use this when',snippet:'Use this when The company wants employees or customers to search internal documents using natural language questions, an',tab:'svc',type:'service'},
+{term:'Amazon Personalize — Use this when',snippet:'Use this when The company needs to show each user personalised recommendations — "customers who bought this also bought"',tab:'svc',type:'service'},
+{term:'Amazon Forecast — Use this when',snippet:'Use this when The company has historical time-stamped data and needs to predict future values — demand forecasting, inve',tab:'svc',type:'service'},
+{term:'Amazon Fraud Detector — Use this when',snippet:'Use this when The company needs to detect fraud or abuse in real time — suspicious transactions, fake account registrati',tab:'svc',type:'service'},
+{term:'Amazon Augmented AI (A2I) — Use this when',snippet:'Use this when The company needs a human to review and approve AI decisions in high-stakes situations — medical diagnoses',tab:'svc',type:'service'},
+{term:'Decision Tree Every branch is readable — trace each decision',snippet:'Constraint: document inner mechanism | Scenario: Classify genes into 20 categories — document how inner mechanism affects output',tab:'ec',type:'clue'},
+{term:'Logistic Regression Binary only — coefficients show each fac',snippet:'Constraint: binary outcome + explain factors | Scenario: Loan approval — must explain which factors influenced each decision',tab:'ec',type:'clue'},
+{term:'Naive Bayes Shows probability per class explicitly',snippet:'Constraint: probability per class + simple | Scenario: Classify text as spam — probability of each class must be visible, simple model',tab:'ec',type:'clue'},
+{term:'Regression (not classification) Classification = category. R',snippet:'Constraint: continuous number output | Scenario: Predict product sales for next quarter — output is a continuous number',tab:'ec',type:'clue'},
+{term:'Neural Network or Random Forest Black box acceptable when on',snippet:'Constraint: accuracy only, no explanation needed | Scenario: Detect fraud — maximum accuracy, no explainability requirement',tab:'ec',type:'clue'},
+{term:'Overfitting — add data, regularise, simplify Not a wrong alg',snippet:'Constraint: high training accuracy + low test accuracy | Scenario: Customer churn model — good on training data, fails on new customers',tab:'ec',type:'clue'},
+{term:'Underfitting — increase complexity Opposite of overfitting —',snippet:'Constraint: low accuracy on BOTH sets | Scenario: Classify images of defective products — model fails on both train and test',tab:'ec',type:'clue'},
+{term:'Data leakage Future/post-event information contaminated trai',snippet:'Constraint: impossible accuracy in dev + production failure | Scenario: Model achieves 99% in development, fails completely in production',tab:'ec',type:'clue'},
+{term:'Batch inferencing High throughput, delayed results',snippet:'Constraint: large volume, results not needed instantly | Scenario: Process thousands of transactions overnight for risk scoring',tab:'ec',type:'clue'},
+{term:'Real-time inferencing Low latency — one prediction at a time',snippet:'Constraint: instant decision at point of transaction | Scenario: Fraud check must happen at the point of payment, within milliseconds',tab:'ec',type:'clue'},
+{term:'Time-series data Temporal ordering is the defining feature',snippet:'Constraint: ordered by time, has timestamps | Scenario: Dataset contains daily temperature readings with timestamps over 3 years',tab:'ec',type:'clue'},
+{term:'Synthetic data generation Titan Image Generator → Ground Tru',snippet:'Constraint: scarce real data + GenAI generation | Scenario: Generate 5,000 training images when only 200 real ones exist',tab:'ec',type:'clue'},
+{term:'ROUGE R = summaRy. Text overlap with reference',snippet:'Constraint: AI summary vs human reference | Scenario: Compare AI meeting summaries to human-written reference summaries',tab:'ec',type:'clue'},
+{term:'BLEU BIlingual — crossing language borders',snippet:'Constraint: translation vs reference translation | Scenario: Score machine translations against professional translator output',tab:'ec',type:'clue'},
+{term:'BERTScore Understands meaning not word overlap',snippet:'Constraint: same meaning, different words | Scenario: Two sentences mean the same thing but use completely different words — score the',tab:'ec',type:'clue'},
+{term:'Perplexity Perplexed = confused. Low = confident',snippet:'Constraint: model confidence, lower is better | Scenario: Measure how confident the model is when predicting the next word',tab:'ec',type:'clue'},
+{term:'Human evaluation Only method that catches subjective qualiti',snippet:'Constraint: subjective quality — tone, safety, helpfulness | Scenario: Evaluate tone, helpfulness, and safety of customer service responses',tab:'ec',type:'clue'},
+{term:'RAG (Bedrock Knowledge Bases) Retrieves at query time — alwa',snippet:'Constraint: private + fresh data + no retraining | Scenario: Private company documents updated daily — FM must always answer from current dat',tab:'ec',type:'clue'},
+{term:'Fine-tuning Bakes style into weights — RAG cannot do this',snippet:'Constraint: permanent style/vocabulary baked in | Scenario: FM must permanently use clinical terminology and documentation style in every re',tab:'ec',type:'clue'},
+{term:'RAG + Bedrock Guardrails Two features together — one for kno',snippet:'Constraint: private knowledge + content restriction | Scenario: FM must answer from private docs AND block competitor topics',tab:'ec',type:'clue'},
+{term:'Few-shot (2–5 examples) 0=zero-shot, 1=single-shot, 2-5=few-',snippet:'Constraint: examples in prompt — count them | Scenario: Provide 3 examples in the prompt to guide the response format',tab:'ec',type:'clue'},
+{term:'Chain-of-thought prompting Builds explainability directly in',snippet:'Constraint: show reasoning before answering | Scenario: Instruct the FM to show its reasoning before giving the final answer',tab:'ec',type:'clue'},
+{term:'Prompt poisoning Injection = in user input. Poisoning = in d',snippet:'Constraint: malicious content in retrieved data | Scenario: Attacker hides instructions inside a RAG source document to override AI',tab:'ec',type:'clue'},
+{term:'Amazon Rekognition Re-cognise = recognise visual content',snippet:'Constraint: understand visual content of image/video | Scenario: Analyse what is IN an image or video — detect faces, objects, scenes',tab:'ec',type:'clue'},
+{term:'Amazon Textract Text + extract = Textract',snippet:'Constraint: read written content out of documents | Scenario: Extract text, tables, and form fields from scanned PDFs and documents',tab:'ec',type:'clue'},
+{term:'Amazon Transcribe Transcribe = write down what is said',snippet:'Constraint: speech to text | Scenario: Convert call centre audio recordings to searchable text',tab:'ec',type:'clue'},
+{term:'Amazon Polly Polly the parrot speaks. Opposite of Transcribe',snippet:'Constraint: text to speech | Scenario: Read product descriptions aloud for a voice interface',tab:'ec',type:'clue'},
+{term:'Amazon Translate Does NOT understand — only converts languag',snippet:'Constraint: convert text from one language to another | Scenario: Translate product listings from English into 12 languages',tab:'ec',type:'clue'},
+{term:'Amazon Comprehend Comprehend = understand. Bulk text analysi',snippet:'Constraint: understand text meaning — sentiment, entities | Scenario: Detect sentiment in thousands of customer reviews',tab:'ec',type:'clue'},
+{term:'Amazon Lex Alexa is built on Lex. Conversation engine',snippet:'Constraint: conversational interface, manages dialogue | Scenario: Build a chatbot that holds a multi-turn conversation to book appointments',tab:'ec',type:'clue'},
+{term:'Amazon Personalize Per-user recommendations from behaviour',snippet:'Constraint: personalised recommendations per user | Scenario: Show each user personalised product recommendations',tab:'ec',type:'clue'},
+{term:'Amazon Forecast Future numbers from past patterns',snippet:'Constraint: predict future numbers from time-series data | Scenario: Predict next quarter inventory demand from 3 years of sales history',tab:'ec',type:'clue'},
+{term:'Amazon Fraud Detector Not Rekognition — that is visual, not ',snippet:'Constraint: detect fraud patterns in real time | Scenario: Flag fraudulent transactions in real time at point of payment',tab:'ec',type:'clue'},
+{term:'Amazon Kendra Kendra SEARCHES only. No FM generation',snippet:'Constraint: search documents, no generated answer | Scenario: Employees search internal policy documents using natural language — no AI answer',tab:'ec',type:'clue'},
+{term:'Amazon SageMaker AI Workshop to BUILD your own. Bedrock = us',snippet:'Constraint: build/train own model, full pipeline control | Scenario: Build and train a custom ML model from scratch — full control',tab:'ec',type:'clue'},
+{term:'SageMaker Canvas Canvas ≠ Autopilot. Canvas = business users',snippet:'Constraint: visual no-code ML for non-technical user | Scenario: Business analyst with no coding skills needs to build ML predictions',tab:'ec',type:'clue'},
+{term:'SageMaker Ground Truth Ground truth = correct answers. Label',snippet:'Constraint: label raw training data at scale | Scenario: Label 50,000 raw images before using them for ML training',tab:'ec',type:'clue'},
+{term:'SageMaker Clarify Clarify = pre-deployment. Model Monitor = ',snippet:'Constraint: bias detection before deployment | Scenario: Detect bias in the model BEFORE it is deployed',tab:'ec',type:'clue'},
+{term:'SageMaker Model Monitor Watches deployed models. Clarify = b',snippet:'Constraint: monitor deployed model for drift | Scenario: Alert when deployed model accuracy degrades over time',tab:'ec',type:'clue'},
+{term:'Amazon Bedrock One API, any provider, no servers',snippet:'Constraint: managed FM API — no infrastructure | Scenario: Use any FM from Anthropic, Meta, or Amazon via a single managed API',tab:'ec',type:'clue'},
+{term:'Bedrock Knowledge Bases Managed RAG — no custom pipeline nee',snippet:'Constraint: FM + private/fresh data via RAG | Scenario: FM answers questions from private company documents that update weekly',tab:'ec',type:'clue'},
+{term:'Bedrock Agents Agents ACT. Knowledge Bases only retrieve',snippet:'Constraint: autonomous multi-step task execution | Scenario: AI that autonomously books flights, sends emails, queries databases without huma',tab:'ec',type:'clue'},
+{term:'Bedrock Guardrails IAM = who can call. Guardrails = what mod',snippet:'Constraint: content filtering + topic blocking | Scenario: Block FM from discussing competitor products or revealing PII',tab:'ec',type:'clue'},
+{term:'Bedrock Data Automation Textract = docs only. Data Automatio',snippet:'Constraint: multimodal unstructured extraction at scale | Scenario: Extract structured data from thousands of PDFs, audio files, and videos automati',tab:'ec',type:'clue'},
+{term:'Titan Image Generator + Ground Truth Synthetic data workflow',snippet:'Constraint: generate images + accurate annotation | Scenario: Generate product images for protective eyewear with high accuracy labels',tab:'ec',type:'clue'},
+{term:'Amazon Q Developer Q Developer = coding. Q Business = compan',snippet:'Constraint: AI coding assistant for software developers | Scenario: Developers need AI coding help directly in their IDE',tab:'ec',type:'clue'},
+{term:'Amazon Q Business Q Business = enterprise knowledge. Q Devel',snippet:'Constraint: company knowledge assistant for employees | Scenario: Employees ask AI about internal HR policies and company documents',tab:'ec',type:'clue'},
+{term:'Amazon Nova Nova = new. Replaced Titan as current generation',snippet:'Constraint: newest Amazon FM family (2024+) | Scenario: Latest Amazon FM family — supports text, image, and video generation',tab:'ec',type:'clue'},
+{term:'SageMaker JumpStart JumpStart ≠ Bedrock. JumpStart = your in',snippet:'Constraint: deploy open-source FM on SageMaker | Scenario: Deploy open-source Llama or Mistral model on AWS infrastructure',tab:'ec',type:'clue'},
+{term:'Fairness principle',snippet:'Constraint: equal outcomes across groups | Scenario: Model treats all demographic groups equally — no discrimination in outcomes',tab:'ec',type:'clue'},
+{term:'Explainability principle Transparent = how system works. Exp',snippet:'Constraint: explain individual decision | Scenario: AI system can explain why it denied this specific loan application',tab:'ec',type:'clue'},
+{term:'IP infringement risk One of 5 named GenAI legal risks',snippet:'Constraint: AI reproduces copyrighted material | Scenario: AI generates content too similar to a copyrighted artwork',tab:'ec',type:'clue'},
+{term:'Amazon A2I (human-in-the-loop) A2I = production workflow. Cl',snippet:'Constraint: human reviews AI output before action | Scenario: Human must approve every AI medical treatment recommendation before it reaches p',tab:'ec',type:'clue'},
+{term:'SageMaker Clarify After deployment → Model Monitor',snippet:'Constraint: bias detection pre-deployment | Scenario: Detect bias across age groups BEFORE the model goes live',tab:'ec',type:'clue'},
+{term:'Label quality analysis Fix BEFORE training. Subgroup analysi',snippet:'Constraint: training label quality problem | Scenario: Training data labels are incorrect — 40% of approved labels are wrong',tab:'ec',type:'clue'},
+{term:'AWS CloudTrail CloudTrail = audit log. CloudWatch = performa',snippet:'Constraint: who made what API call and when | Scenario: Audit: which IAM user deleted the SageMaker endpoint last Tuesday',tab:'ec',type:'clue'},
+{term:'Amazon CloudWatch CloudWatch = metrics/alarms. CloudTrail = ',snippet:'Constraint: monitor metrics and send alarms | Scenario: Alert when model endpoint error rate exceeds 5% in production',tab:'ec',type:'clue'},
+{term:'Amazon Macie Macie = S3 data classification. Inspector = com',snippet:'Constraint: discover PII in S3 storage | Scenario: Find PII data stored in S3 training data buckets',tab:'ec',type:'clue'},
+{term:'AWS PrivateLink VPC = your private network. PrivateLink = pr',snippet:'Constraint: no public internet for service traffic | Scenario: All Bedrock API traffic must stay off the public internet',tab:'ec',type:'clue'},
+{term:'Data residency Residency = WHERE. Retention = HOW LONG',snippet:'Constraint: geographic data location requirement | Scenario: Patient data must stay within the EU region',tab:'ec',type:'clue'},
+{term:'Data retention Retention = HOW LONG. Residency = WHERE',snippet:'Constraint: time-based data deletion policy | Scenario: Automatically delete all customer records after 7 years',tab:'ec',type:'clue'},
+{term:'Review cadence + team training + transparency standards Thre',snippet:'Constraint: scheduled reviews + staff training + transparency | Scenario: AI system review every quarter, annual staff AI training, public disclosure of A',tab:'ec',type:'clue'},
+{term:'AWS Artifact Artifact = download AWS docs. Audit Manager = c',snippet:'Constraint: download AWS compliance certificates | Scenario: Download AWS HIPAA compliance documentation for auditors',tab:'ec',type:'clue'},
+{term:'AWS Audit Manager Artifact = download. Audit Manager = colle',snippet:'Constraint: automate audit evidence collection | Scenario: Automatically collect SOC 2 audit evidence from AWS resources',tab:'ec',type:'clue'},
+{term:'Decision Tree',snippet:'Constraint: Multiple categories + document mechanism | Scenario: Classify genes into 20 categories + document how inner mechanism affects output',tab:'ec',type:'clue'},
+{term:'Logistic Regression',snippet:'Constraint: Binary + explain factors | Scenario: Loan approval — must explain which factors influenced each individual decision',tab:'ec',type:'clue'},
+{term:'Naive Bayes',snippet:'Constraint: Probability per class + simple | Scenario: Spam detection — show probability of spam vs not-spam, simple model preferred',tab:'ec',type:'clue'},
+{term:'Neural Network or Random Forest',snippet:'Constraint: Accuracy only, no explanation | Scenario: Fraud detection — highest possible accuracy, explainability not required',tab:'ec',type:'clue'},
+{term:'Only algo that is both multiclass AND fully traceable',snippet:'Constraint: Decision Tree | Scenario: Classify into multiple categories',tab:'ec',type:'clue'},
+{term:'Binary + interpretable coefficients',snippet:'Constraint: Logistic Regression | Scenario: Binary outcome',tab:'ec',type:'clue'},
+{term:'RAG retrieves current data at query time — no retraining',snippet:'Constraint: RAG + Bedrock Knowledge Bases | Scenario: Private/fresh data (updated frequently)',tab:'ec',type:'clue'},
+{term:'Knowledge Bases for data, Guardrails for content safety',snippet:'Constraint: RAG + Bedrock Guardrails | Scenario: Private/fresh data',tab:'ec',type:'clue'},
+{term:'Generate synthetic → label with human verification workflow',snippet:'Constraint: Titan Image Generator + SageMaker Ground Truth | Scenario: Generate training images (limited real data)',tab:'ec',type:'clue'},
+{term:'Bedrock = managed FM. PrivateLink = private endpoint',snippet:'Constraint: Amazon Bedrock + AWS PrivateLink | Scenario: FM-based solution',tab:'ec',type:'clue'},
+{term:'ROUGE = overlap, BERTScore = semantic meaning',snippet:'Constraint: ROUGE + BERTScore | Scenario: Evaluate summarisation quality (automated)',tab:'ec',type:'clue'},
+{term:'Clarify does BOTH: bias detection + feature attribution expl',snippet:'Constraint: SageMaker Clarify | Scenario: Detect bias across demographic groups',tab:'ec',type:'clue'},
+{term:'Fine-tuning = style baked in. RAG = current data at runtime',snippet:'Constraint: Fine-tuning + RAG | Scenario: FM answers from company data',tab:'ec',type:'clue'},
+{term:'When explainability is NOT mentioned, black box is acceptabl',snippet:'Constraint: Neural Network or Random Forest | Scenario: High accuracy classification',tab:'ec',type:'clue'},
+{term:'Residency = WHERE. Retention = HOW LONG. Two separate govern',snippet:'Constraint: Data residency + Data retention policy | Scenario: Data must stay in EU region (GDPR)',tab:'ec',type:'clue'},
+{term:'Two of the six named governance protocol components',snippet:'Constraint: Review cadence + Team training requirements | Scenario: Quarterly AI system reviews',tab:'ec',type:'clue'},
+{term:'A2I = human review workflow. Clarify = automated bias analys',snippet:'Constraint: Amazon A2I + SageMaker Clarify | Scenario: Human must approve AI decision before action',tab:'ec',type:'clue'},
+{term:'Neural Network',snippet:'Maximum accuracy only — interpretability not required or mentioned',tab:'ec',type:'algorithm'},
+{term:'vs: High',snippet:'Decision Tree',tab:'d1',type:'confused'},
+{term:'vs: Medium',snippet:'Naive Bayes',tab:'d1',type:'confused'},
+{term:'vs: Low-Medium',snippet:'Random Forest',tab:'d1',type:'confused'},
+{term:'vs: Low',snippet:'Support Vector Machine',tab:'d1',type:'confused'},
+{term:'vs: Very Low',snippet:'Neural Network / Deep Learning',tab:'d1',type:'confused'},
+{term:'vs: Classification',snippet:'Output is a category (yes/no, type A/B/C)',tab:'d1',type:'confused'},
+{term:'vs: Regression',snippet:'Output is a number (price, score, quantity)',tab:'d1',type:'confused'},
+{term:'vs: Unsupervised (clustering)',snippet:'Data has NO labels — find natural groups',tab:'d1',type:'confused'},
+{term:'vs: Real-time inferencing',snippet:'Instant decision at point of transaction',tab:'d1',type:'confused'},
+{term:'vs: Batch inferencing',snippet:'Processing 1M records overnight',tab:'d1',type:'confused'},
+{term:'vs: F1 Score or AUC-ROC',snippet:'Imbalanced dataset (rare fraud cases)',tab:'d1',type:'confused'},
+{term:'vs: SageMaker Feature Store',snippet:'Reuse ML features across multiple models',tab:'d1',type:'confused'},
+{term:'vs: SageMaker Canvas',snippet:'Business analyst needs to build ML without writing code',tab:'d1',type:'confused'},
+{term:'vs: SageMaker Autopilot',snippet:'Data scientist wants automated algorithm selection with full API contr',tab:'d1',type:'confused'},
+{term:'vs: Data pre-processing',snippet:'Clean and format raw data before feeding into ML training',tab:'d1',type:'confused'},
+{term:'vs: SageMaker Model Monitor',snippet:'Monitor production model for accuracy degradation over time',tab:'d1',type:'confused'},
+{term:'vs: Amazon Nova',snippet:'"Latest Amazon FM family"',tab:'d2',type:'confused'},
+{term:'vs: Token-based pricing',snippet:'"Pay only when I use the model, variable traffic"',tab:'d2',type:'confused'},
+{term:'vs: Provisioned throughput',snippet:'"Guaranteed response speed for high-volume app"',tab:'d2',type:'confused'},
+{term:'vs: Zero-shot',snippet:'"No examples in the prompt"',tab:'d2',type:'confused'},
+{term:'vs: Single-shot',snippet:'"Exactly one example in the prompt"',tab:'d2',type:'confused'},
+{term:'vs: Amazon Q Developer',snippet:'"AI codes in my IDE / AWS console"',tab:'d2',type:'confused'},
+{term:'vs: Amazon Q Business',snippet:'"Employees ask AI questions about company data"',tab:'d2',type:'confused'},
+{term:'vs: Diffusion model / Titan Image / Nova',snippet:'"Generate images from text"',tab:'d2',type:'confused'},
+{term:'vs: Hallucination',snippet:'Model gives a confident but completely false answer',tab:'d2',type:'confused'},
+{term:'vs: Top-p / Top-k sampling',snippet:'Control how many different word choices the model considers at each st',tab:'d2',type:'confused'},
+{term:'vs: Context window limit',snippet:'Model cannot process the full document because it exceeds memory limit',tab:'d2',type:'confused'},
+{term:'vs: Amazon Bedrock',snippet:'Use existing FM via managed serverless API, no infrastructure',tab:'d2',type:'confused'},
+{term:'vs: RLHF',snippet:'Retrain model weights using human preference scores to align behaviour',tab:'d2',type:'confused'},
+{term:'vs: RAG',snippet:'"Private documents, updated weekly, reduce hallucination"',tab:'d3',type:'confused'},
+{term:'vs: Fine-tuning',snippet:'"Need specific tone and medical vocabulary baked in"',tab:'d3',type:'confused'},
+{term:'vs: Amazon Kendra',snippet:'"Search internal documents with natural language"',tab:'d3',type:'confused'},
+{term:'vs: Bedrock Knowledge Bases',snippet:'"RAG with a foundation model on company docs"',tab:'d3',type:'confused'},
+{term:'vs: Bedrock Agents',snippet:'"AI that autonomously books and schedules"',tab:'d3',type:'confused'},
+{term:'vs: ROUGE',snippet:'"Measure text summary quality vs reference"',tab:'d3',type:'confused'},
+{term:'vs: BERTScore',snippet:'"Two sentences with same meaning, different words"',tab:'d3',type:'confused'},
+{term:'vs: Bedrock Guardrails',snippet:'"Block harmful content in Bedrock responses"',tab:'d3',type:'confused'},
+{term:'vs: Prompt poisoning',snippet:'"Hidden instruction in RAG document to override AI"',tab:'d3',type:'confused'},
+{term:'vs: Prompt engineering',snippet:'Improve responses using better instructions in the prompt — no new dat',tab:'d3',type:'confused'},
+{term:'vs: Zero / Single / Few-shot (count the exam',snippet:'Provide exactly zero, one, or multiple examples in the prompt',tab:'d3',type:'confused'},
+{term:'vs: Continuous pre-training',snippet:'Extend the model\u2019s base knowledge on a large domain corpus without a s',tab:'d3',type:'confused'},
+{term:'vs: Human evaluation',snippet:'Rate AI response quality on helpfulness and safety using real people',tab:'d3',type:'confused'},
+{term:'vs: Bedrock Data Automation',snippet:'Extract structured data from images, audio, and video for an AI pipeli',tab:'d3',type:'confused'},
+{term:'vs: Fairness',snippet:'"Works for all demographic groups equally"',tab:'d4',type:'confused'},
+{term:'vs: Inclusivity',snippet:'"Training data represents all groups"',tab:'d4',type:'confused'},
+{term:'vs: Explainability',snippet:'"Can explain WHY it made a specific decision"',tab:'d4',type:'confused'},
+{term:'vs: Transparency',snippet:'"Architecture and training process are public"',tab:'d4',type:'confused'},
+{term:'vs: Robustness',snippet:'"Performs well on unusual or adversarial inputs"',tab:'d4',type:'confused'},
+{term:'vs: SageMaker Clarify',snippet:'"Detects bias BEFORE model is deployed"',tab:'d4',type:'confused'},
+{term:'vs: Amazon A2I',snippet:'"Human reviews AI decision before it takes effect"',tab:'d4',type:'confused'},
+{term:'vs: IP infringement risk',snippet:'"AI generated content too similar to copyrighted work"',tab:'d4',type:'confused'},
+{term:'vs: Veracity (responsible AI principle)',snippet:'Model outputs are truthful and grounded in facts — no made-up informat',tab:'d4',type:'confused'},
+{term:'vs: Human-centered design for XAI',snippet:'AI explanation is designed to be understandable for the specific end u',tab:'d4',type:'confused'},
+{term:'vs: Label quality analysis',snippet:'Verify whether training data labels are correct and consistent before ',tab:'d4',type:'confused'},
+{term:'vs: Data lineage',snippet:'Document where training data came from and how it was transformed',tab:'d4',type:'confused'},
+{term:'vs: AWS CloudTrail',snippet:'"Who made this API call and when?"',tab:'d5',type:'confused'},
+{term:'vs: Amazon CloudWatch',snippet:'"Alert when model endpoint error rate spikes"',tab:'d5',type:'confused'},
+{term:'vs: AWS Audit Manager',snippet:'"Automatically collect HIPAA audit evidence"',tab:'d5',type:'confused'},
+{term:'vs: AWS Config',snippet:'"Track whether S3 buckets have encryption enabled"',tab:'d5',type:'confused'},
+{term:'vs: Amazon Macie',snippet:'"Find PII data stored in S3 buckets"',tab:'d5',type:'confused'},
+{term:'vs: Amazon Inspector',snippet:'"Scan EC2 for security vulnerabilities"',tab:'d5',type:'confused'},
+{term:'vs: AWS Artifact',snippet:'"Download AWS GDPR compliance documentation"',tab:'d5',type:'confused'},
+{term:'vs: AWS PrivateLink',snippet:'"No traffic over the public internet to Bedrock"',tab:'d5',type:'confused'},
+{term:'vs: AWS Secrets Manager',snippet:'"Store API keys securely, auto-rotate them"',tab:'d5',type:'confused'},
+{term:'vs: Encryption at rest (AWS KMS)',snippet:'Protect data stored on disk from unauthorised access',tab:'d5',type:'confused'},
+{term:'vs: Data residency',snippet:'Keep AI training data within a specific country for legal compliance',tab:'d5',type:'confused'},
+{term:'vs: Rekognition',snippet:'Analyse what is IN an image or video',tab:'svc',type:'confused'},
+{term:'vs: Textract',snippet:'Extract text and tables FROM a scanned document or PDF',tab:'svc',type:'confused'},
+{term:'vs: Transcribe',snippet:'Convert speech/audio recording to text',tab:'svc',type:'confused'},
+{term:'vs: Polly',snippet:'Convert written text to spoken audio',tab:'svc',type:'confused'},
+{term:'vs: Translate',snippet:'Translate text from one language to another',tab:'svc',type:'confused'},
+{term:'vs: Comprehend',snippet:'Detect sentiment, entities, key phrases in text',tab:'svc',type:'confused'},
+{term:'vs: Lex',snippet:'Build a conversational chatbot or voice assistant',tab:'svc',type:'confused'},
+{term:'vs: Personalize',snippet:'Personalised product/content recommendations per user',tab:'svc',type:'confused'},
+{term:'vs: Forecast',snippet:'Predict future demand, inventory, or financial values',tab:'svc',type:'confused'},
+{term:'vs: Fraud Detector',snippet:'Detect fraudulent transactions or account abuse',tab:'svc',type:'confused'},
+{term:'vs: Kendra',snippet:'Search company documents with natural language — no generated answer n',tab:'svc',type:'confused'},
+{term:'vs: Bedrock Knowledge Bases',snippet:'RAG — answer questions using private documents with an FM',tab:'svc',type:'confused'},
+{term:'vs: Amazon Bedrock',snippet:'Use any FM via managed API — serverless, no infrastructure',tab:'svc',type:'confused'},
+{term:'vs: SageMaker JumpStart',snippet:'Deploy or fine-tune open-source FM (Llama, Mistral) on AWS',tab:'svc',type:'confused'},
+{term:'vs: SageMaker AI',snippet:'Build/train a completely custom ML model from scratch',tab:'svc',type:'confused'},
+{term:'vs: Amazon Nova',snippet:'Latest Amazon FM family (newest generation)',tab:'svc',type:'confused'},
+{term:'vs: Amazon Q Developer',snippet:'AI coding assistant in the developer\u2019s IDE',tab:'svc',type:'confused'},
+{term:'vs: Amazon Q Business',snippet:'Employees ask AI about internal company policies and documents',tab:'svc',type:'confused'},
+{term:'vs: Bedrock Agents',snippet:'AI that autonomously takes actions across multiple steps',tab:'svc',type:'confused'},
+{term:'vs: Amazon A2I',snippet:'Human must review and approve AI decision before it takes effect',tab:'svc',type:'confused'},
+{term:'vs: SageMaker Clarify',snippet:'Detect bias in a model BEFORE deployment',tab:'svc',type:'confused'},
+{term:'vs: SageMaker Model Monitor',snippet:'Monitor a deployed model for drift AFTER deployment',tab:'svc',type:'confused'},
+{term:'vs: SageMaker Canvas',snippet:'No-code ML for a business analyst with no coding skills',tab:'svc',type:'confused'},
+{term:'vs: SageMaker Ground Truth',snippet:'Label raw training data (images, text, audio) before model training',tab:'svc',type:'confused'},
+{term:'vs: Amazon Comprehend',snippet:'Analyse text meaning in bulk: sentiment, entities, key phrases',tab:'svc',type:'confused'},
+{term:'vs: SageMaker Data Wrangler',snippet:'Prepare and transform ML training data visually without coding',tab:'svc',type:'confused'},
+{term:'vs: Bedrock Guardrails',snippet:'Control what the FM can say to users (content topics and safety)',tab:'svc',type:'confused'}
+];
+
+
+// ── SEARCH ENGINE ────────────────────────────────────────────────
+var _st = null;
+
+var _TC = {d1:'#34d399',d2:'#a78bfa',d3:'#fbbf24',d4:'#f87171',d5:'#4f9eff',svc:'#e879f9',ec:'#f97316',fc:'#f59e0b'};
+var _TL = {d1:'D1',d2:'D2',d3:'D3',d4:'D4',d5:'D5',svc:'AWS Services',ec:'Exam Clues',fc:'Flashcards'};
+var _YL = {concept:'Concept',service:'Service',clue:'Exam Clue',algorithm:'Algorithm',confused:'Confused Pair'};
+
+function _hl(t,q){
+  try{return t.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark style="background:rgba(79,158,255,.3);color:#93c5fd;padding:0 2px;border-radius:2px">$1</mark>');}
+  catch(e){return t;}
+}
+
+function runSearch(q){
+  q=(q||'').trim();
+  var box=document.getElementById('search-results');
+  if(!box)return;
+  if(!q||q.length<2){box.style.display='none';return;}
+  var ql=q.toLowerCase(), words=ql.split(/\s+/);
+  var scored=searchIndex.map(function(item,i){
+    var tl=item.term.toLowerCase(),sl=item.snippet.toLowerCase(),sc=0;
+    if(tl===ql)sc=100;
+    else if(tl.startsWith(ql))sc=80;
+    else if(tl.includes(ql))sc=60;
+    else if(words.every(function(w){return tl.includes(w);}))sc=50;
+    if(sc===0&&sl.includes(ql))sc=30;
+    else if(sc===0&&words.some(function(w){return sl.includes(w);}))sc=10;
+    return {i:i,term:item.term,snippet:item.snippet,tab:item.tab,type:item.type,sc:sc};
+  }).filter(function(x){return x.sc>0;}).sort(function(a,b){return b.sc-a.sc;}).slice(0,10);
+
+  if(!scored.length){
+    box.innerHTML='<div style="padding:14px;font-size:12px;color:#6b7280;text-align:center">No results for \u201c'+q+'\u201d</div>';
+    box.style.display='block';return;
+  }
+  var h='<div style="padding:6px 14px;font-size:10px;color:#6b7280;border-bottom:0.5px solid rgba(255,255,255,.08)">'+scored.length+' result'+(scored.length>1?'s':'')+' \u2014 click to jump</div>';
+  scored.forEach(function(item){
+    var c=_TC[item.tab]||'#7a8799';
+    var tl=_TL[item.tab]||item.tab;
+    var yl=_YL[item.type]||item.type;
+    var tm=item.term.length>55?item.term.substring(0,52)+'...':item.term;
+    var sn=item.snippet.length>90?item.snippet.substring(0,87)+'...':item.snippet;
+    h+='<div style="padding:10px 14px;cursor:pointer;border-bottom:0.5px solid rgba(255,255,255,.06);" onmousedown="event.preventDefault();jumpTo('+item.i+')">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+      +'<span style="font-size:12px;font-weight:600;color:#e8edf5">'+_hl(tm,q)+'</span>'
+      +'<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:'+c+'22;color:'+c+';border:0.5px solid '+c+'44">'+tl+'</span>'
+      +'<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.05);color:#6b7280">'+yl+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#6b7280;line-height:1.4">'+_hl(sn,q)+'</div>'
+      +'</div>';
+  });
+  box.innerHTML=h;
+  box.style.display='block';
+}
+
+function jumpTo(idx){
+  var item=searchIndex[idx];
+  if(!item)return;
+  var box=document.getElementById('search-results');
+  if(box)box.style.display='none';
+  showTab(item.tab);
+  // clear old highlight
+  document.querySelectorAll('.sh-wrap').forEach(function(w){
+    var p=w.parentNode;
+    while(w.firstChild)p.insertBefore(w.firstChild,w);
+    p.removeChild(w);
+  });
+  setTimeout(function(){
+    var panel=document.getElementById('panel-'+item.tab);
+    if(!panel)return;
+    var el=findEl(panel,item);
+    if(!el){panel.scrollTop=0;return;}
+    // wrap in highlight box
+    var wrap=document.createElement('div');
+    wrap.className='sh-wrap';
+    wrap.style.cssText='border:2px solid #4f9eff;border-radius:10px;padding:4px;margin:6px 0;box-shadow:0 0 0 4px rgba(79,158,255,.15);background:rgba(79,158,255,.04);position:relative';
+    var lbl=document.createElement('div');
+    lbl.style.cssText='position:absolute;top:-11px;left:10px;background:#4f9eff;color:#000;font-size:10px;font-weight:700;padding:1px 8px;border-radius:4px;white-space:nowrap';
+    lbl.textContent='\u2193 '+item.term.substring(0,40);
+    wrap.appendChild(lbl);
+    el.parentNode.insertBefore(wrap,el);
+    wrap.appendChild(el);
+    // scroll panel
+    var pr=panel.getBoundingClientRect(),wr=wrap.getBoundingClientRect();
+    panel.scrollTo({top:Math.max(0,wr.top-pr.top+panel.scrollTop-80),behavior:'smooth'});
+    setTimeout(function(){document.querySelectorAll('.sh-wrap').forEach(function(w){
+      var p=w.parentNode;while(w.firstChild)p.insertBefore(w.firstChild,w);p.removeChild(w);
+    });},8000);
+  },200);
+}
+
+function findEl(panel,item){
+  var ql=item.term.toLowerCase().substring(0,50);
+  var sl=item.snippet.toLowerCase().substring(0,40);
+  var els,i;
+  els=panel.querySelectorAll('.card-term');
+  for(i=0;i<els.length;i++){if(els[i].textContent.toLowerCase().includes(ql)){return els[i].closest('.card')||els[i].parentElement;}}
+  els=panel.querySelectorAll('.algo-name');
+  for(i=0;i<els.length;i++){if(els[i].textContent.toLowerCase().includes(ql)){return els[i].closest('.algo-card')||els[i].parentElement;}}
+  els=panel.querySelectorAll('.svc-name');
+  for(i=0;i<els.length;i++){if(els[i].textContent.toLowerCase().includes(ql)){return els[i].closest('.svc-item')||els[i].parentElement;}}
+  els=panel.querySelectorAll('td');
+  for(i=0;i<els.length;i++){var t=els[i].textContent.toLowerCase();if(t.includes(ql)||t.includes(sl)){return els[i].closest('tr');}}
+  return null;
+}
+
+function closeSearch(){
+  var box=document.getElementById('search-results');
+  if(box)box.style.display='none';
+}
+
+// Attach events once DOM is ready
+(function wire(){
+  var inp=document.getElementById('search-input');
+  var cb=document.getElementById('search-clear');
+  if(!inp){setTimeout(wire,50);return;}
+
+  inp.addEventListener('input',function(){
+    if(cb)cb.style.display=this.value?'block':'none';
+    clearTimeout(_st);
+    var v=this.value;
+    _st=setTimeout(function(){runSearch(v);},120);
+  });
+
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){closeSearch();inp.value='';if(cb)cb.style.display='none';return;}
+    if(e.key==='Enter'){
+      e.preventDefault();
+      var v=inp.value.trim();
+      if(!v)return;
+      clearTimeout(_st);
+      runSearch(v);
+      setTimeout(function(){
+        var box=document.getElementById('search-results');
+        var first=box?box.querySelector('[onmousedown]'):null;
+        if(first)first.dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
+      },80);
+    }
+  });
+
+  if(cb){cb.addEventListener('click',function(){
+    inp.value='';cb.style.display='none';closeSearch();inp.focus();
+  });}
+
+  // Close on click outside — use mousedown so it fires before blur
+  document.addEventListener('mousedown',function(e){
+    var wrap=document.getElementById('search-wrap');
+    var box=document.getElementById('search-results');
+    if(!box||box.style.display==='none')return;
+    if(wrap&&wrap.contains(e.target))return;
+    if(box&&box.contains(e.target))return;
+    box.style.display='none';
+  });
+})();
+</script></body></html>
